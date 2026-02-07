@@ -524,18 +524,15 @@ function handlePickWinner(roundId, matchId, pickId) {
   saveActiveRun(active);
 
   // Tweet
-  const attractionNumber = round.findIndex(x => x.id === matchId) + 1;
-  const tweet = buildDecisionTweet(roundId, winner, loser, pts, attractionNumber, m.decidedAt);
-  openTweetDraft(tweet);
-
-  // Advance if round complete
-  if (isRoundComplete(roundId)) {
-    ensureNextRoundIfReady(roundId);
-    saveActiveRun(active);
-  }
-
-  renderBracketPage();
-}
+  const attractionNumber = countDecisions(active);
+  const tweet = buildDecisionTweet(
+    roundId,
+    winner,
+    loser,
+    pts,
+    attractionNumber,
+    m.decidedAt
+  );
 
 function undoDecision(roundId, matchId) {
   const round = active?.bracket?.rounds?.[roundId] || [];
