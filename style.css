@@ -376,17 +376,17 @@ body{
 }
 
 
-/* Split matchup vs winner area on wider screens */
+/* Split matchup vs winner area (also on phones) */
 .matchBody{
   display:flex;
   flex-direction: column;
   gap: 10px;
 }
 
-@media (min-width: 640px){
+@media (min-width: 360px){
   .matchBody{
     display:grid;
-    grid-template-columns: 1fr 260px;
+    grid-template-columns: 1fr 200px;
     gap: 12px;
     align-items: start;
   }
