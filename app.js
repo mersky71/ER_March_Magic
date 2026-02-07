@@ -161,7 +161,7 @@ function renderStartPage() {
       ${resume ? `
         <div class="card">
           <div class="h1">Resume most recent run</div>
-          <p class="p" style="margin-top:6px;">Last decision: ${escapeHtml(resume.lastLabel)} • ${resume.decided}/31 decided</p>
+          <p class="p" style="margin-top:6px;">Last attraction: ${escapeHtml(resume.lastLabel)} • ${resume.decided}/31 completed</p>
           <div class="btnRow" style="margin-top:12px;">
             <button id="resumeBtn" class="btn btnPrimary" type="button">Resume</button>
           </div>
