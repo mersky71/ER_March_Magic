@@ -333,7 +333,7 @@ function renderBracketPage() {
   const pts = computePointsTotal();
   const roundDone = countRoundDecisions(roundId);
   const roundTotal = (active.bracket.rounds[roundId]?.length ?? roundMeta.matchups);
-  counterPill.textContent = `Pts: ${pts} • ${roundId}: ${roundDone}/${roundTotal}`;
+  counterPill.textContent = `Pts: ${pts}`;
 
   roundSelect.disabled = false;
   renderRoundSelect(roundId);
@@ -435,7 +435,7 @@ function renderMatchCard(roundId, m, idx) {
   return `
     <div class="matchCard">
       <div class="matchHeader">
-        <div class="matchTitle">Attraction ${idx + 1} · ${escapeHtml(roundMeta.label)}</div>
+        <div class="matchTitle">Matchup ${idx + 1} · ${escapeHtml(roundMeta.label)}</div>
         <div class="matchMeta">${escapeHtml(decided ? roundId : roundId)}</div>
       </div>
 
@@ -443,14 +443,12 @@ function renderMatchCard(roundId, m, idx) {
         <div class="pickRow">
           <button class="pickBtn ${aWinner ? "isWinner" : ""} ${aLoser ? "isLoser" : ""}"
             type="button" data-round="${roundId}" data-match="${m.id}" data-pick="${m.a}">
-            <span>${escapeHtml(shortNameFor(m.a))}</span>
-            <span class="pts">(${pointsA})</span>
+            <span>${escapeHtml(shortNameFor(m.a))} (${pointsA})</span>
           </button>
 
           <button class="pickBtn ${bWinner ? "isWinner" : ""} ${bLoser ? "isLoser" : ""}"
             type="button" data-round="${roundId}" data-match="${m.id}" data-pick="${m.b}">
-            <span>${escapeHtml(shortNameFor(m.b))}</span>
-            <span class="pts">(${pointsB})</span>
+            <span>${escapeHtml(shortNameFor(m.b))} (${pointsB})</span>
           </button>
         </div>
 
