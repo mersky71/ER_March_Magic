@@ -159,7 +159,7 @@ function renderStartPage() {
 
       ${resume ? `
         <div class="card">
-          <div class="h1">Resume most recent run</div>
+          <div class="h1">Resume run</div>
           <p class="p" style="margin-top:6px;">Last attraction: ${escapeHtml(resume.lastLabel)} • ${resume.decided}/31 completed</p>
           <div class="btnRow" style="margin-top:12px;">
             <button id="resumeBtn" class="btn btnPrimary" type="button">Resume</button>
@@ -198,11 +198,23 @@ function renderStartPage() {
     if (!candidate) return;
 
     openConfirmDialog({
-      title: "Resume most recent run?",
-      body: `Last decision: ${candidate.lastLabel}\n\nResuming will remove this run from Previous brackets and continue it.`,
+      title: "Resume run?",
+      body: `Last attraction: ${candidate.lastLabel}`,
       confirmText: "Resume run",
       confirmClass: "",
       onConfirm: () => handleResumeMostRecent()
+    });
+  });
+
+  document.getElementById("rulesBtn")?.addEventListener("click", () => {
+    openDialog({
+      title: "Rules",
+      body: "",
+      content: `<div class="card" style="border:1px solid rgba(17,24,39,.12);">
+        <div style="font-weight:900; margin-bottom:6px;">(Placeholder)</div>
+        <div class="p">We\'ll put the official ER March Magic Bracket Challenge rules here.</div>
+      </div>`,
+      buttons: [{ text: "Close", className: "btn btnPrimary", action: () => closeDialog() }]
     });
   });
 

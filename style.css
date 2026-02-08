@@ -1,10 +1,10 @@
 :root{
   /* Round colors */
-  --roundR1: #22d3ee;  /* cyan */
-  --roundR2: #a78bfa;  /* purple */
-  --roundR3: #fb7185;  /* pink */
-  --roundR4: #f59e0b;  /* orange */
-  --roundR5: #34d399;  /* green */
+  --roundR1: #0891b2;  /* deep cyan */
+  --roundR2: #7c3aed;  /* deep purple */
+  --roundR3: #e11d48;  /* deep rose */
+  --roundR4: #d97706;  /* deep amber */
+  --roundR5: #059669;  /* deep emerald */
 
   /* Land colors */
   --landTomorrowland: #22d3ee;
@@ -78,6 +78,7 @@ body{
   background: #ffffff;
   padding-top: 6px;
   padding-bottom: 6px;
+  border-bottom: 1px solid rgba(17,24,39,.10);
 }
 
 .topbar, .topbar *{ color:#fff; }
@@ -469,11 +470,11 @@ body{
   cursor: default;
 }
 
-.roundBtn[data-round="R1"]{ background: rgba(34,211,238,.28); }
-.roundBtn[data-round="R2"]{ background: rgba(167,139,250,.28); }
-.roundBtn[data-round="R3"]{ background: rgba(251,113,133,.28); }
-.roundBtn[data-round="R4"]{ background: rgba(245,158,11,.28); }
-.roundBtn[data-round="R5"]{ background: rgba(52,211,153,.28); }
+.roundBtn[data-round="R1"]{ background: var(--roundR1); }
+.roundBtn[data-round="R2"]{ background: var(--roundR2); }
+.roundBtn[data-round="R3"]{ background: var(--roundR3); }
+.roundBtn[data-round="R4"]{ background: var(--roundR4); }
+.roundBtn[data-round="R5"]{ background: var(--roundR5); }
 
 .topbar__row2Left{ display:flex; align-items:center; gap:10px; }
 .topbar__row2Center{ flex: 1; display:flex; justify-content:center; }
@@ -529,4 +530,15 @@ body{
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.roundBtn{ color:#fff; }
+
+/* Points pill: use current round color */
+.topbar__row--2 .pill{
+  background: var(--roundColor);
+  border: 1px solid rgba(0,0,0,.08);
+  color: #fff;
+  font-weight: 900;
+  font-size: 12px;
 }
