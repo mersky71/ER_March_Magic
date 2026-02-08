@@ -71,13 +71,13 @@ body{
 }
 
 .topbar__row--1{
-  background: var(--land);
+  background: var(--roundColor);
 }
 
 .topbar__row--2{
-  background: var(--roundColor);
-  padding-top: 8px;
-  padding-bottom: 8px;
+  background: #ffffff;
+  padding-top: 6px;
+  padding-bottom: 6px;
 }
 
 .topbar, .topbar *{ color:#fff; }
@@ -141,7 +141,7 @@ body{
 
 .menu{
   position:absolute;
-  width: min(320px, calc(100vw - 24px));
+  width: min(420px, calc(100vw - 24px));
   max-width: calc(100vw - 24px);
   right: 12px;
   left: auto;
@@ -170,7 +170,7 @@ body{
 .app{
   max-width: 980px;
   margin: 0 auto;
-  padding: 96px 12px 60px;
+  padding: 98px 12px 60px;
 }
 
 .card{
@@ -490,3 +490,43 @@ body{
 
 .pickBtn.isWinner{ box-shadow: 0 0 0 3px rgba(255,255,255,.20); }
 .pickBtn.isLoser{ opacity:.45; filter: grayscale(.15); }
+
+/* Row 2 uses dark text on white background */
+.topbar__row--2, .topbar__row--2 *{
+  color: #111827;
+}
+
+.topbar__row--2 .pill{
+  border: 1px solid rgba(17,24,39,.16);
+  background: rgba(17,24,39,.04);
+  color: #111827;
+  font-size: 12px;
+  padding: 6px 8px;
+}
+
+.topbar__row--2 .iconBtn{
+  border: 1px solid rgba(17,24,39,.16);
+  background: rgba(17,24,39,.04);
+  color: #111827;
+}
+
+.topbar__row--2{
+  gap: 8px;
+}
+.topbar__row2Center{
+  justify-content: center;
+}
+.roundBar{
+  gap: 6px;
+}
+.roundBtn{
+  padding: 6px 8px;
+  font-size: 12px;
+  min-width: 38px;
+}
+
+.menu__item{
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

@@ -276,6 +276,71 @@ function currentRoundId() {
   return active?.bracket?.currentRoundId || "R1";
 }
 
+
+function syncDownstreamRounds() {
+  // Build each round progressively based on available winners from previous round.
+  const order = ["R1","R2","R3","R4","R5"];
+  for (let i = 0; i < order.length - 1; i++) {
+    const prevId = order[i];
+    const nextId = order[i+1];
+
+    const prev = active.bracket.rounds[prevId] || [];
+    const next = active.bracket.rounds[nextId] || [];
+
+    // winners list may include nulls if matches undecided
+    const winners = prev.map(m => m?.winner || null);
+
+    // next has matchups = prev.length/2
+    const needed = Math.floor(prev.length / 2);
+    if (!Array.isArray(active.bracket.rounds[nextId])) active.bracket.rounds[nextId] = [];
+
+    // ensure array has length needed; create empty shells if needed
+    while (active.bracket.rounds[nextId].length < needed) {
+      active.bracket.rounds[nextId].push({
+        id: crypto.randomUUID(),
+        a: null,
+        b: null,
+        winner: null,
+        loser: null,
+        decidedAt: null
+      });
+    }
+    if (active.bracket.rounds[nextId].length > needed) {
+      active.bracket.rounds[nextId] = active.bracket.rounds[nextId].slice(0, needed);
+    }
+
+    // populate each matchup's a/b if both prerequisites are decided
+    for (let k = 0; k < needed; k++) {
+      const left = winners[2*k];
+      const right = winners[2*k + 1];
+      const mm = active.bracket.rounds[nextId][k];
+
+      if (left && right) {
+        // Only set if not already set; if changed due to undo, clear downstream decisions
+        if (mm.a !== left || mm.b !== right) {
+          mm.a = left;
+          mm.b = right;
+          mm.winner = null;
+          mm.loser = null;
+          mm.decidedAt = null;
+
+          // Also clear all further rounds, because their inputs might change.
+          for (let j = i+2; j < order.length; j++) {
+            active.bracket.rounds[order[j]] = [];
+          }
+        }
+      } else {
+        // Not ready: clear matchup participants/decision
+        mm.a = null;
+        mm.b = null;
+        mm.winner = null;
+        mm.loser = null;
+        mm.decidedAt = null;
+      }
+    }
+  }
+}
+
 function ensureNextRoundIfReady(roundIdJustCompleted) {
   const idx = ROUNDS.findIndex(r => r.id === roundIdJustCompleted);
   if (idx < 0) return;
@@ -325,6 +390,8 @@ function renderBracketPage() {
     saveActiveRun(active);
   }
 
+  syncDownstreamRounds();
+
   const roundId = currentRoundId();
   const roundMeta = ROUNDS.find(r => r.id === roundId) || ROUNDS[0];
 
@@ -337,10 +404,11 @@ function renderBracketPage() {
   applyRoundTheme(roundId);
   // Round dropdown lives in the top bar
 
-  const matchups = active.bracket.rounds[roundId] || [];
+  const roundArr = active.bracket.rounds[roundId] || [];
+  const matchups = roundArr.length ? roundArr : new Array(roundMeta.matchups).fill(null).map((_, i) => ({ __placeholder: true, index: i }));
   const matchHtml = `
     <div class="matchups">
-      ${matchups.map((m, i) => renderMatchCard(roundId, m, i)).join("")}
+      ${matchups.map((m, i) => (m.__placeholder ? renderLockedMatchCard(roundId, i, roundMeta) : renderMatchCard(roundId, m, i))).join("")}
     </div>
   `;
 
@@ -404,24 +472,16 @@ function applyRoundTheme(roundId) {
 }
 
 function isRoundUnlocked(roundId) {
-  // R1 always
-  if (roundId === "R1") return true;
-
-  // unlocked if built (has matchups) OR all previous rounds complete
-  const arr = active?.bracket?.rounds?.[roundId];
-  if (Array.isArray(arr) && arr.length > 0) return true;
-
-  const idx = ROUNDS.findIndex(r => r.id === roundId);
-  if (idx <= 0) return true;
-
-  // require all earlier rounds complete
-  for (let i = 0; i < idx; i++) {
-    if (!isRoundComplete(ROUNDS[i].id)) return false;
-  }
+  // Navigation is always allowed; matchups will only populate when prerequisites are met.
   return true;
 }
 
 function renderMatchCard(roundId, m, idx) {
+  if (!m?.a || !m?.b) {
+    const roundMeta2 = ROUNDS.find(r => r.id === roundId) || ROUNDS[0];
+    return renderLockedMatchCard(roundId, idx, roundMeta2);
+  }
+
   const roundMeta = ROUNDS.find(r => r.id === roundId) || ROUNDS[0];
   const a = ridesById.get(m.a);
   const b = ridesById.get(m.b);
@@ -476,6 +536,28 @@ function renderMatchCard(roundId, m, idx) {
   `;
 }
 
+
+function lockMessageForRound(roundId) {
+  if (roundId === "R2") return "Complete both Round 1 matchups to enable this matchup.";
+  if (roundId === "R3") return "Complete both Round 2 matchups to enable this matchup.";
+  if (roundId === "R4") return "Complete both Round 3 matchups to enable this matchup.";
+  if (roundId === "R5") return "Complete both Round 4 matchups to enable this matchup.";
+  return "Complete prerequisite matchups to enable this matchup.";
+}
+
+function renderLockedMatchCard(roundId, idx, roundMeta) {
+  return `
+    <div class="matchCard">
+      <div class="matchHeader">
+        <div class="matchTitle">Matchup ${idx + 1} · ${escapeHtml(roundMeta.label)}</div>
+        <div class="matchMeta">${escapeHtml(roundId)}</div>
+      </div>
+      <div class="smallText" style="margin-top:6px;">
+        ${escapeHtml(lockMessageForRound(roundId))}
+      </div>
+    </div>
+  `;
+}
 
 function shortNameFor(rideId) {
   return ridesById.get(rideId)?.shortName || ridesById.get(rideId)?.name || rideId;
@@ -549,11 +631,9 @@ const tweet = buildDecisionTweet(
 
   openTweetDraft(tweet);
 
-  // Advance if round complete
-  if (isRoundComplete(roundId)) {
-    ensureNextRoundIfReady(roundId);
-    saveActiveRun(active);
-  }
+  // Populate downstream rounds opportunistically
+  syncDownstreamRounds();
+  saveActiveRun(active);
 
   renderBracketPage();
 }
@@ -625,14 +705,27 @@ function rebuildRoundsFromEvents() {
     }
   }
 
-  // Set current round to first incomplete
-  for (const r of ROUNDS) {
-    if (!isRoundComplete(r.id)) {
-      active.bracket.currentRoundId = r.id;
+  // Populate downstream rounds based on replayed winners
+  syncDownstreamRounds();
+
+  // Keep current round at the earliest round that still has an undecided matchup with participants
+  const order = ["R1","R2","R3","R4","R5"];
+  for (const rid of order) {
+    const arr = active.bracket.rounds[rid] || [];
+    if (arr.some(m => m?.a && m?.b && !m?.winner)) {
+      active.bracket.currentRoundId = rid;
       return;
     }
   }
-  active.bracket.currentRoundId = "R5";
+  // Otherwise, default to the deepest round with any populated matchup
+  for (let i = order.length - 1; i >= 0; i--) {
+    const arr = active.bracket.rounds[order[i]] || [];
+    if (arr.some(m => m?.a && m?.b)) {
+      active.bracket.currentRoundId = order[i];
+      return;
+    }
+  }
+  active.bracket.currentRoundId = "R1";
 }
 
 function buildDecisionTweet(roundId, winnerId, loserId, points, attractionNumber, timeISO) {
