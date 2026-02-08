@@ -25,7 +25,7 @@ const shareUpdateMenuBtn = document.getElementById("shareUpdateMenuBtn");
 const settingsMenuBtn = document.getElementById("settingsMenuBtn");
 const endToStartBtn = document.getElementById("endToStartBtn");
 
-const roundSelect = document.getElementById("roundSelect");
+const roundBar = document.getElementById("roundBar");
 const counterPill = document.getElementById("counterPill");
 
 let rides = [];
@@ -68,10 +68,9 @@ async function init() {
 
 function setHeaderEnabled(enabled) {
   moreBtn.disabled = !enabled;
-  roundSelect.disabled = !enabled;
   counterPill.style.display = enabled ? "inline-flex" : "none";
-  roundSelect.style.display = enabled ? "inline-flex" : "none";
   moreBtn.style.display = enabled ? "inline-flex" : "none";
+  if (!enabled) roundBar.innerHTML = "";
 }
 
 function setupMoreMenu() {
@@ -334,9 +333,8 @@ function renderBracketPage() {
   const roundDone = countRoundDecisions(roundId);
   const roundTotal = (active.bracket.rounds[roundId]?.length ?? roundMeta.matchups);
   counterPill.textContent = `Pts: ${pts}`;
-
-  roundSelect.disabled = false;
-  renderRoundSelect(roundId);
+  renderRoundBar(roundId);
+  applyRoundTheme(roundId);
   // Round dropdown lives in the top bar
 
   const matchups = active.bracket.rounds[roundId] || [];
@@ -375,25 +373,34 @@ function renderBracketPage() {
 }
 
 
-function renderRoundSelect(selectedRoundId) {
-  roundSelect.innerHTML = ROUNDS.map(r => {
+function renderRoundBar(selectedRoundId) {
+  roundBar.innerHTML = ROUNDS.map(r => {
     const enabled = isRoundUnlocked(r.id);
-    const sel = r.id === selectedRoundId ? "selected" : "";
-    const dis = enabled ? "" : "disabled";
-    return `<option value="${r.id}" ${sel} ${dis}>${r.id}</option>`;
+    const activeClass = r.id === selectedRoundId ? "isActive" : "";
+    return `<button class="roundBtn ${activeClass}" type="button" data-round="${r.id}" ${enabled ? "" : "disabled"}>${r.id}</button>`;
   }).join("");
 
-  roundSelect.onchange = () => {
-    const rid = roundSelect.value;
-    if (!rid) return;
-    if (!isRoundUnlocked(rid)) {
-      renderRoundSelect(currentRoundId());
-      return;
-    }
-    active.bracket.currentRoundId = rid;
-    saveActiveRun(active);
-    renderBracketPage();
+  roundBar.querySelectorAll("[data-round]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const rid = btn.getAttribute("data-round");
+      if (!rid) return;
+      if (!isRoundUnlocked(rid)) return;
+      active.bracket.currentRoundId = rid;
+      saveActiveRun(active);
+      renderBracketPage();
+    });
+  });
+}
+
+function applyRoundTheme(roundId) {
+  const map = {
+    R1: "var(--roundR1)",
+    R2: "var(--roundR2)",
+    R3: "var(--roundR3)",
+    R4: "var(--roundR4)",
+    R5: "var(--roundR5)"
   };
+  document.documentElement.style.setProperty("--roundColor", map[roundId] || "var(--roundR1)");
 }
 
 function isRoundUnlocked(roundId) {
@@ -442,12 +449,12 @@ function renderMatchCard(roundId, m, idx) {
       <div class="matchBody">
         <div class="pickRow">
           <button class="pickBtn ${aWinner ? "isWinner" : ""} ${aLoser ? "isLoser" : ""}"
-            type="button" data-round="${roundId}" data-match="${m.id}" data-pick="${m.a}">
+            type="button" data-round="${roundId}" data-match="${m.id}" data-pick="${m.a}" data-land="${escapeHtml(ridesById.get(m.a)?.land || "Tomorrowland")}">
             <span>${escapeHtml(shortNameFor(m.a))} (${pointsA} pts)</span>
           </button>
 
           <button class="pickBtn ${bWinner ? "isWinner" : ""} ${bLoser ? "isLoser" : ""}"
-            type="button" data-round="${roundId}" data-match="${m.id}" data-pick="${m.b}">
+            type="button" data-round="${roundId}" data-match="${m.id}" data-pick="${m.b}" data-land="${escapeHtml(ridesById.get(m.b)?.land || "Tomorrowland")}">
             <span>${escapeHtml(shortNameFor(m.b))} (${pointsB} pts)</span>
           </button>
         </div>
@@ -458,7 +465,7 @@ function renderMatchCard(roundId, m, idx) {
               <div class="advancePill">${escapeHtml(advLabel)}</div>
               <div class="smallText">${escapeHtml(completedLine)}</div>
             </div>
-            <button class="smallBtn" type="button" data-round="${roundId}" data-undo="${m.key}">Undo</button>
+            <button class="smallBtn" type="button" data-round="${roundId}" data-undo="${m.id}">Undo</button>
           ` : `
             <div class="smallText">Pick a ride to advance</div>
           `}

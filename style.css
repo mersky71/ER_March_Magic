@@ -1,4 +1,22 @@
 :root{
+  /* Round colors */
+  --roundR1: #22d3ee;  /* cyan */
+  --roundR2: #a78bfa;  /* purple */
+  --roundR3: #fb7185;  /* pink */
+  --roundR4: #f59e0b;  /* orange */
+  --roundR5: #34d399;  /* green */
+
+  /* Land colors */
+  --landTomorrowland: #22d3ee;
+  --landFantasyland: #ec4899;
+  --landAdventureland: #22c55e;
+  --landFrontierland: #f97316;
+  --landLibertySquare: #facc15;
+  --landMainStreet: #ffffff;
+
+  /* Current round color (set by JS) */
+  --roundColor: var(--roundR1);
+
   --bg: #0b0f14;
   --card: #ffffff;
   --text: #111827;
@@ -32,20 +50,34 @@ body{
   position: fixed;
   top: 0;
   left: 0;
-  right: 0;  
+  right: 0;
   z-index: 20;
   display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-  padding:10px 12px;
-
-  background: var(--land);
+  flex-direction: column;
+  gap: 0;
+  padding: 0;
   border-bottom: none;
-
   transform: translateZ(0);
   will-change: transform;
   backface-visibility: hidden;
+}
+
+.topbar__row{
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+}
+
+.topbar__row--1{
+  background: var(--land);
+}
+
+.topbar__row--2{
+  background: var(--roundColor);
+  padding-top: 8px;
+  padding-bottom: 8px;
 }
 
 .topbar, .topbar *{ color:#fff; }
@@ -138,7 +170,7 @@ body{
 .app{
   max-width: 980px;
   margin: 0 auto;
-  padding: 56px 12px 60px;
+  padding: 96px 12px 60px;
 }
 
 .card{
@@ -267,7 +299,7 @@ body{
 }
 
 .pickBtn{
-  width: auto;
+  width: 100%;
   max-width: 100%;
   text-align:left;
   border-radius: 14px;
@@ -401,3 +433,60 @@ body{
     width: 100%;
   }
 }
+
+
+.roundBar{
+  display:flex;
+  gap: 8px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.roundBar::-webkit-scrollbar{ display:none; }
+
+.roundBtn{
+  padding: 8px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.40);
+  background: rgba(0,0,0,.18);
+  color: #fff;
+  font-weight: 900;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+  min-width: 44px;
+  text-align:center;
+}
+
+.roundBtn.isActive{
+  border-color: rgba(255,255,255,.85);
+  box-shadow: 0 0 0 3px rgba(255,255,255,.18);
+}
+
+.roundBtn:disabled{
+  opacity: .45;
+  cursor: default;
+}
+
+.roundBtn[data-round="R1"]{ background: rgba(34,211,238,.28); }
+.roundBtn[data-round="R2"]{ background: rgba(167,139,250,.28); }
+.roundBtn[data-round="R3"]{ background: rgba(251,113,133,.28); }
+.roundBtn[data-round="R4"]{ background: rgba(245,158,11,.28); }
+.roundBtn[data-round="R5"]{ background: rgba(52,211,153,.28); }
+
+.topbar__row2Left{ display:flex; align-items:center; gap:10px; }
+.topbar__row2Center{ flex: 1; display:flex; justify-content:center; }
+.topbar__row2Right{ display:flex; align-items:center; gap:10px; }
+
+
+/* Ride button land tint (subtle) */
+.pickBtn[data-land="Tomorrowland"]{ background: rgba(34,211,238,.10); border-color: rgba(34,211,238,.35); }
+.pickBtn[data-land="Fantasyland"]{ background: rgba(236,72,153,.10); border-color: rgba(236,72,153,.35); }
+.pickBtn[data-land="Adventureland"]{ background: rgba(34,197,94,.10); border-color: rgba(34,197,94,.35); }
+.pickBtn[data-land="Frontierland"]{ background: rgba(249,115,22,.10); border-color: rgba(249,115,22,.35); }
+.pickBtn[data-land="LibertySquare"]{ background: rgba(250,204,21,.14); border-color: rgba(250,204,21,.40); }
+.pickBtn[data-land="MainStreet"]{ background: rgba(255,255,255,.22); border-color: rgba(255,255,255,.45); }
+
+.pickBtn.isWinner{ box-shadow: 0 0 0 3px rgba(255,255,255,.20); }
+.pickBtn.isLoser{ opacity:.45; filter: grayscale(.15); }
