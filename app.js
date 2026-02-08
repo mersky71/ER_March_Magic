@@ -25,7 +25,7 @@ const shareUpdateMenuBtn = document.getElementById("shareUpdateMenuBtn");
 const settingsMenuBtn = document.getElementById("settingsMenuBtn");
 const endToStartBtn = document.getElementById("endToStartBtn");
 
-const roundSelect = document.getElementById("roundSelect");
+const roundBar = document.getElementById("roundBar");
 const counterPill = document.getElementById("counterPill");
 
 let rides = [];
@@ -48,6 +48,13 @@ async function init() {
   setupMoreMenu();
 
   rides = await fetch("./rides.json").then(r => r.json());
+  // Normalize ride schema
+  rides = (Array.isArray(rides) ? rides : []).map(r => ({
+    ...r,
+    basePoints: Number(r?.basePoints ?? r?.pointsRound1 ?? r?.points ?? 10),
+    seed: Number(r?.seed ?? 0),
+    land: String(r?.land ?? "TL")
+  }));
   ridesById = new Map(rides.map(r => [r.id, r]));
 
   active = loadActiveRun();
@@ -68,10 +75,9 @@ async function init() {
 
 function setHeaderEnabled(enabled) {
   moreBtn.disabled = !enabled;
-  roundSelect.disabled = !enabled;
   counterPill.style.display = enabled ? "inline-flex" : "none";
-  roundSelect.style.display = enabled ? "inline-flex" : "none";
   moreBtn.style.display = enabled ? "inline-flex" : "none";
+  if (!enabled) roundBar.innerHTML = "";
 }
 
 function setupMoreMenu() {
@@ -149,6 +155,10 @@ function getResumeCandidate() {
 }
 
 function renderStartPage() {
+  document.body.dataset.page = "start";
+
+  applyRoundTheme("R1");
+
   const resume = getResumeCandidate();
 
   appEl.innerHTML = `
@@ -156,12 +166,17 @@ function renderStartPage() {
       <div class="card">
         <div class="h1">Welcome</div>
         <p class="p">Run the Every Ride March Magic Bracket Challenge on March 14, 2026. Experience attractions, earn points, and auto-open tweet drafts.</p>
+        <div class="btnRow" style="margin-top:12px;">
+          <button id="rulesBtn" class="btn" type="button">Rules</button>
+          <button id="bracketBtn" class="btn" type="button">Bracket</button>
+        </div>
+
       </div>
 
       ${resume ? `
         <div class="card">
-          <div class="h1">Resume most recent run</div>
-          <p class="p" style="margin-top:6px;">Last attraction: ${escapeHtml(resume.lastLabel)} • ${resume.decided}/31 completed</p>
+          <div class="h1">Resume run</div>
+          <p class="p" style="margin-top:6px;">Last attraction: ${escapeHtml(resume.lastLabel)}<br/>${resume.decided}/31 attractions completed</p>
           <div class="btnRow" style="margin-top:12px;">
             <button id="resumeBtn" class="btn btnPrimary" type="button">Resume</button>
           </div>
@@ -178,7 +193,7 @@ function renderStartPage() {
 
         <div class="btnRow" style="margin-top:12px;">
           <button id="startBtn" class="btn btnPrimary" type="button">Start new bracket</button>
-          <button id="historyBtn" class="btn" type="button">Previous brackets</button>
+            <button id="historyBtn" class="btn" type="button">Previous brackets</button>
         </div>
       </div>
     </div>
@@ -199,11 +214,31 @@ function renderStartPage() {
     if (!candidate) return;
 
     openConfirmDialog({
-      title: "Resume most recent run?",
-      body: `Last decision: ${candidate.lastLabel}\n\nResuming will remove this run from Previous brackets and continue it.`,
+      title: "Resume run?",
+      body: `Last attraction: ${candidate.lastLabel}`,
       confirmText: "Resume run",
       confirmClass: "",
       onConfirm: () => handleResumeMostRecent()
+    });
+  });
+
+  document.getElementById("bracketBtn")?.addEventListener("click", () => {
+    openDialog({
+      title: "Bracket",
+      body: "Bracket view coming next (and will support printing).",
+      buttons: [{ text: "Close", className: "btn btnPrimary", action: () => closeDialog() }]
+    });
+  });
+
+  document.getElementById("rulesBtn")?.addEventListener("click", () => {
+    openDialog({
+      title: "Rules",
+      body: "",
+      content: `<div class="card" style="border:1px solid rgba(17,24,39,.12);">
+        <div style="font-weight:900; margin-bottom:6px;">(Placeholder)</div>
+        <div class="p">We\'ll put the official ER March Magic Bracket Challenge rules here.</div>
+      </div>`,
+      buttons: [{ text: "Close", className: "btn btnPrimary", action: () => closeDialog() }]
     });
   });
 
@@ -277,6 +312,71 @@ function currentRoundId() {
   return active?.bracket?.currentRoundId || "R1";
 }
 
+
+function syncDownstreamRounds() {
+  // Build each round progressively based on available winners from previous round.
+  const order = ["R1","R2","R3","R4","R5"];
+  for (let i = 0; i < order.length - 1; i++) {
+    const prevId = order[i];
+    const nextId = order[i+1];
+
+    const prev = active.bracket.rounds[prevId] || [];
+    const next = active.bracket.rounds[nextId] || [];
+
+    // winners list may include nulls if matches undecided
+    const winners = prev.map(m => m?.winner || null);
+
+    // next has matchups = prev.length/2
+    const needed = Math.floor(prev.length / 2);
+    if (!Array.isArray(active.bracket.rounds[nextId])) active.bracket.rounds[nextId] = [];
+
+    // ensure array has length needed; create empty shells if needed
+    while (active.bracket.rounds[nextId].length < needed) {
+      active.bracket.rounds[nextId].push({
+        id: crypto.randomUUID(),
+        a: null,
+        b: null,
+        winner: null,
+        loser: null,
+        decidedAt: null
+      });
+    }
+    if (active.bracket.rounds[nextId].length > needed) {
+      active.bracket.rounds[nextId] = active.bracket.rounds[nextId].slice(0, needed);
+    }
+
+    // populate each matchup's a/b if both prerequisites are decided
+    for (let k = 0; k < needed; k++) {
+      const left = winners[2*k];
+      const right = winners[2*k + 1];
+      const mm = active.bracket.rounds[nextId][k];
+
+      if (left && right) {
+        // Only set if not already set; if changed due to undo, clear downstream decisions
+        if (mm.a !== left || mm.b !== right) {
+          mm.a = left;
+          mm.b = right;
+          mm.winner = null;
+          mm.loser = null;
+          mm.decidedAt = null;
+
+          // Also clear all further rounds, because their inputs might change.
+          for (let j = i+2; j < order.length; j++) {
+            active.bracket.rounds[order[j]] = [];
+          }
+        }
+      } else {
+        // Not ready: clear matchup participants/decision
+        mm.a = null;
+        mm.b = null;
+        mm.winner = null;
+        mm.loser = null;
+        mm.decidedAt = null;
+      }
+    }
+  }
+}
+
 function ensureNextRoundIfReady(roundIdJustCompleted) {
   const idx = ROUNDS.findIndex(r => r.id === roundIdJustCompleted);
   if (idx < 0) return;
@@ -320,11 +420,15 @@ function ensureNextRoundIfReady(roundIdJustCompleted) {
    ========================= */
 
 function renderBracketPage() {
+  document.body.dataset.page = "bracket";
+
   if (!active?.bracket) {
     // Safety: if somehow missing, rebuild
     active.bracket = buildInitialBracket();
     saveActiveRun(active);
   }
+
+  syncDownstreamRounds();
 
   const roundId = currentRoundId();
   const roundMeta = ROUNDS.find(r => r.id === roundId) || ROUNDS[0];
@@ -334,15 +438,15 @@ function renderBracketPage() {
   const roundDone = countRoundDecisions(roundId);
   const roundTotal = (active.bracket.rounds[roundId]?.length ?? roundMeta.matchups);
   counterPill.textContent = `Pts: ${pts}`;
-
-  roundSelect.disabled = false;
-  renderRoundSelect(roundId);
+  renderRoundBar(roundId);
+  applyRoundTheme(roundId);
   // Round dropdown lives in the top bar
 
-  const matchups = active.bracket.rounds[roundId] || [];
+  const roundArr = active.bracket.rounds[roundId] || [];
+  const matchups = roundArr.length ? roundArr : new Array(roundMeta.matchups).fill(null).map((_, i) => ({ __placeholder: true, index: i }));
   const matchHtml = `
     <div class="matchups">
-      ${matchups.map((m, i) => renderMatchCard(roundId, m, i)).join("")}
+      ${matchups.map((m, i) => (m.__placeholder ? renderLockedMatchCard(roundId, i, roundMeta) : renderMatchCard(roundId, m, i))).join("")}
     </div>
   `;
 
@@ -375,46 +479,47 @@ function renderBracketPage() {
 }
 
 
-function renderRoundSelect(selectedRoundId) {
-  roundSelect.innerHTML = ROUNDS.map(r => {
+function renderRoundBar(selectedRoundId) {
+  roundBar.innerHTML = ROUNDS.map(r => {
     const enabled = isRoundUnlocked(r.id);
-    const sel = r.id === selectedRoundId ? "selected" : "";
-    const dis = enabled ? "" : "disabled";
-    return `<option value="${r.id}" ${sel} ${dis}>${r.id}</option>`;
+    const activeClass = r.id === selectedRoundId ? "isActive" : "";
+    return `<button class="roundBtn ${activeClass}" type="button" data-round="${r.id}" ${enabled ? "" : "disabled"}>${r.id}</button>`;
   }).join("");
 
-  roundSelect.onchange = () => {
-    const rid = roundSelect.value;
-    if (!rid) return;
-    if (!isRoundUnlocked(rid)) {
-      renderRoundSelect(currentRoundId());
-      return;
-    }
-    active.bracket.currentRoundId = rid;
-    saveActiveRun(active);
-    renderBracketPage();
+  roundBar.querySelectorAll("[data-round]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const rid = btn.getAttribute("data-round");
+      if (!rid) return;
+      if (!isRoundUnlocked(rid)) return;
+      active.bracket.currentRoundId = rid;
+      saveActiveRun(active);
+      renderBracketPage();
+    });
+  });
+}
+
+function applyRoundTheme(roundId) {
+  const map = {
+    R1: "var(--roundR1)",
+    R2: "var(--roundR2)",
+    R3: "var(--roundR3)",
+    R4: "var(--roundR4)",
+    R5: "var(--roundR5)"
   };
+  document.documentElement.style.setProperty("--roundColor", map[roundId] || "var(--roundR1)");
 }
 
 function isRoundUnlocked(roundId) {
-  // R1 always
-  if (roundId === "R1") return true;
-
-  // unlocked if built (has matchups) OR all previous rounds complete
-  const arr = active?.bracket?.rounds?.[roundId];
-  if (Array.isArray(arr) && arr.length > 0) return true;
-
-  const idx = ROUNDS.findIndex(r => r.id === roundId);
-  if (idx <= 0) return true;
-
-  // require all earlier rounds complete
-  for (let i = 0; i < idx; i++) {
-    if (!isRoundComplete(ROUNDS[i].id)) return false;
-  }
+  // Navigation is always allowed; matchups will only populate when prerequisites are met.
   return true;
 }
 
 function renderMatchCard(roundId, m, idx) {
+  if (!m?.a || !m?.b) {
+    const roundMeta2 = ROUNDS.find(r => r.id === roundId) || ROUNDS[0];
+    return renderLockedMatchCard(roundId, idx, roundMeta2);
+  }
+
   const roundMeta = ROUNDS.find(r => r.id === roundId) || ROUNDS[0];
   const a = ridesById.get(m.a);
   const b = ridesById.get(m.b);
@@ -442,12 +547,12 @@ function renderMatchCard(roundId, m, idx) {
       <div class="matchBody">
         <div class="pickRow">
           <button class="pickBtn ${aWinner ? "isWinner" : ""} ${aLoser ? "isLoser" : ""}"
-            type="button" data-round="${roundId}" data-match="${m.id}" data-pick="${m.a}">
+            type="button" data-round="${roundId}" data-match="${m.id}" data-pick="${m.a}" data-land="${escapeHtml(ridesById.get(m.a)?.land || "TL")}">
             <span>${escapeHtml(shortNameFor(m.a))} (${pointsA} pts)</span>
           </button>
 
           <button class="pickBtn ${bWinner ? "isWinner" : ""} ${bLoser ? "isLoser" : ""}"
-            type="button" data-round="${roundId}" data-match="${m.id}" data-pick="${m.b}">
+            type="button" data-round="${roundId}" data-match="${m.id}" data-pick="${m.b}" data-land="${escapeHtml(ridesById.get(m.b)?.land || "TL")}">
             <span>${escapeHtml(shortNameFor(m.b))} (${pointsB} pts)</span>
           </button>
         </div>
@@ -458,7 +563,7 @@ function renderMatchCard(roundId, m, idx) {
               <div class="advancePill">${escapeHtml(advLabel)}</div>
               <div class="smallText">${escapeHtml(completedLine)}</div>
             </div>
-            <button class="smallBtn" type="button" data-round="${roundId}" data-undo="${m.key}">Undo</button>
+            <button class="smallBtn" type="button" data-round="${roundId}" data-undo="${m.id}">Undo</button>
           ` : `
             <div class="smallText">Pick a ride to advance</div>
           `}
@@ -469,6 +574,28 @@ function renderMatchCard(roundId, m, idx) {
   `;
 }
 
+
+function lockMessageForRound(roundId) {
+  if (roundId === "R2") return "Complete both Round 1 matchups to enable this matchup.";
+  if (roundId === "R3") return "Complete both Round 2 matchups to enable this matchup.";
+  if (roundId === "R4") return "Complete both Round 3 matchups to enable this matchup.";
+  if (roundId === "R5") return "Complete both Round 4 matchups to enable this matchup.";
+  return "Complete prerequisite matchups to enable this matchup.";
+}
+
+function renderLockedMatchCard(roundId, idx, roundMeta) {
+  return `
+    <div class="matchCard">
+      <div class="matchHeader">
+        <div class="matchTitle">Matchup ${idx + 1} · ${escapeHtml(roundMeta.label)}</div>
+        <div class="matchMeta">${escapeHtml(roundId)}</div>
+      </div>
+      <div class="smallText" style="margin-top:6px;">
+        ${escapeHtml(lockMessageForRound(roundId))}
+      </div>
+    </div>
+  `;
+}
 
 function shortNameFor(rideId) {
   return ridesById.get(rideId)?.shortName || ridesById.get(rideId)?.name || rideId;
@@ -529,24 +656,13 @@ function handlePickWinner(roundId, matchId, pickId) {
 
   // Tweet
   const attractionNumber = countDecisions(active);
-  
-
-const tweet = buildDecisionTweet(
-    roundId,
-    winner,
-    loser,
-    pts,
-    attractionNumber,
-    m.decidedAt
-  );
-
+  const matchupNumber = round.findIndex(x => x.id === matchId) + 1;
+  const tweet = buildDecisionTweet(attractionNumber, roundId, matchupNumber, winner, loser, pts, m.decidedAt);
   openTweetDraft(tweet);
 
-  // Advance if round complete
-  if (isRoundComplete(roundId)) {
-    ensureNextRoundIfReady(roundId);
-    saveActiveRun(active);
-  }
+  // Populate downstream rounds opportunistically
+  syncDownstreamRounds();
+  saveActiveRun(active);
 
   renderBracketPage();
 }
@@ -618,24 +734,37 @@ function rebuildRoundsFromEvents() {
     }
   }
 
-  // Set current round to first incomplete
-  for (const r of ROUNDS) {
-    if (!isRoundComplete(r.id)) {
-      active.bracket.currentRoundId = r.id;
+  // Populate downstream rounds based on replayed winners
+  syncDownstreamRounds();
+
+  // Keep current round at the earliest round that still has an undecided matchup with participants
+  const order = ["R1","R2","R3","R4","R5"];
+  for (const rid of order) {
+    const arr = active.bracket.rounds[rid] || [];
+    if (arr.some(m => m?.a && m?.b && !m?.winner)) {
+      active.bracket.currentRoundId = rid;
       return;
     }
   }
-  active.bracket.currentRoundId = "R5";
+  // Otherwise, default to the deepest round with any populated matchup
+  for (let i = order.length - 1; i >= 0; i--) {
+    const arr = active.bracket.rounds[order[i]] || [];
+    if (arr.some(m => m?.a && m?.b)) {
+      active.bracket.currentRoundId = order[i];
+      return;
+    }
+  }
+  active.bracket.currentRoundId = "R1";
 }
 
-function buildDecisionTweet(roundId, winnerId, loserId, points, attractionNumber, timeISO) {
+function buildDecisionTweet(attractionNumber, roundId, matchupNumber, winnerId, loserId, points, timeISO) {
   const w = shortNameFor(winnerId);
   const l = shortNameFor(loserId);
   const timeStr = formatTime12(new Date(timeISO));
-
   const totalPts = computePointsTotal(); // already includes this decision
 
-  return `Attraction ${attractionNumber} (${roundId}). ${w} (${points} points) over ${l} at ${timeStr}.
+  return `Attraction ${attractionNumber}. ${w} (${points} points) at ${timeStr}.
+(Round ${roundId} Matchup ${matchupNumber} vs ${l})
 ${totalPts} points today`;
 }
 
