@@ -525,7 +525,9 @@ function handlePickWinner(roundId, matchId, pickId) {
 
   // Tweet
   const attractionNumber = countDecisions(active);
-  const tweet = buildDecisionTweet(
+  
+
+const tweet = buildDecisionTweet(
     roundId,
     winner,
     loser,
@@ -534,6 +536,19 @@ function handlePickWinner(roundId, matchId, pickId) {
     m.decidedAt
   );
 
+  openTweetDraft(tweet);
+
+  // Advance if round complete
+  if (isRoundComplete(roundId)) {
+    ensureNextRoundIfReady(roundId);
+    saveActiveRun(active);
+  }
+
+  renderBracketPage();
+}
+
+
+  
 function undoDecision(roundId, matchId) {
   const round = active?.bracket?.rounds?.[roundId] || [];
   const m = round.find(x => x.id === matchId);
