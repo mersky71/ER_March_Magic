@@ -765,7 +765,8 @@ function buildDecisionTweet(attractionNumber, roundId, matchupNumber, winnerId, 
 
   return `Attraction ${attractionNumber}. ${w} (${points} points) at ${timeStr}.
 (Round ${roundId} Matchup ${matchupNumber} vs ${l})
-${totalPts} points today`;
+${totalPts} This ride: ${ridePoints} points
+Total today: ${totalPoints} points`;
 }
 
 function openTweetDraft(mainText) {
