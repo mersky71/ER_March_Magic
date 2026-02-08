@@ -460,7 +460,7 @@ function renderMatchCard(roundId, m, idx) {
             </div>
             <button class="smallBtn" type="button" data-round="${roundId}" data-undo="${m.key}">Undo</button>
           ` : `
-            <div class="smallText">Pick a winner to advance</div>
+            <div class="smallText">Pick a ride to advance</div>
           `}
         </div>
         </div>
