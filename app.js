@@ -184,11 +184,14 @@ function renderStartPage() {
       ` : ""}
 
       <div class="card">
-        <div class="h1">Start a new challenge</div>
+        <div class="h1">Start a new bracket</div>
 
         <div class="formRow">
-          <div class="label">Tags and hashtags (modify as needed)</div>
-          <textarea id="tagsText" class="textarea" style="min-height:90px;">#ERBracketChallenge</textarea>
+          <div class="label">Tags and hashtags (modify as needed) (appended to every tweet)</div>
+          <textarea  id="tagsText" class="textarea" style="min-height:90px;" class="tagsBox">${escapeHtml(active?.settings?.tagsText || DEFAULT_TAGS)}</textarea>
+
+      <div class="fieldLabel">My fundraising link (modify as needed)</div>
+      <input id="fundLinkText" class="fundBox" type="text" value="${escapeHtml(active?.settings?.fundraisingLink || "")}" placeholder="https://…">
         </div>
 
         <div class="btnRow" style="margin-top:12px;">
@@ -658,7 +661,9 @@ function handlePickWinner(roundId, matchId, pickId) {
   // Tweet
   const attractionNumber = countDecisions(active);
   const matchupNumber = round.findIndex(x => x.id === matchId) + 1;
-  const tweet = buildDecisionTweet(attractionNumber, roundId, matchupNumber, winner, loser, pts, m.decidedAt);
+  const tagsText = active?.settings?.tagsText ?? active?.settings?.tweetTags ?? "";
+  const fundraisingLink = active?.settings?.fundraisingLink ?? "";
+  const tweet = buildDecisionTweet(attractionNumber, roundId, matchupNumber, winner, loser, pts, m.decidedAt, tagsText, fundraisingLink);
   openTweetDraft(tweet);
 
   // Populate downstream rounds opportunistically
@@ -758,17 +763,26 @@ function rebuildRoundsFromEvents() {
   active.bracket.currentRoundId = "R1";
 }
 
-function buildDecisionTweet(attractionNumber, roundId, matchupNumber, winnerId, loserId, points, timeISO) {
+function buildDecisionTweet(attractionNumber, roundId, matchupNumber, winnerId, loserId, points, timeISO, tagsText, fundraisingLink) {
   const w = shortNameFor(winnerId);
   const l = shortNameFor(loserId);
   const timeStr = formatTime12(new Date(timeISO));
   const totalPts = computePointsTotal(); // already includes this decision
   const roundNum = String(roundId).replace(/^R/, "");
 
-  return `Attraction ${attractionNumber}. ${w} at ${timeStr}
+  const base = `Attraction ${attractionNumber}. ${w} at ${timeStr}
 (Round ${roundNum} Matchup ${matchupNumber} vs ${l})
 This ride: ${points} points
 Total today: ${totalPts} points`;
+
+  const tags = (tagsText || "").trim();
+  const link = (fundraisingLink || "").trim();
+
+  // Append hashtags block (and link if present) separated by blank line, like the old app.
+  let tail = "";
+  if (tags) tail += `\n\n${tags}`;
+  if (link) tail += `${tail ? "\n" : "\n\n"}${link}`;
+  return base + tail;
 }
 
 function openTweetDraft(mainText) {
@@ -793,7 +807,7 @@ function openSettingsDialog() {
     body: "This is appended to every tweet (hashtags, etc.).",
     content: `
       <div class="formRow">
-        <div class="label">Tags and hashtags</div>
+        <div class="label">Tags and hashtags (modify as needed)</div>
         <textarea id="settingsTags" class="textarea" style="min-height:120px;">${escapeHtml(currentTags)}</textarea>
       </div>
     `,
