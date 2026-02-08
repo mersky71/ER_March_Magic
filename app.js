@@ -148,6 +148,8 @@ function getResumeCandidate() {
 }
 
 function renderStartPage() {
+  document.body.dataset.page = "start";
+
   applyRoundTheme("R1");
 
   const resume = getResumeCandidate();
@@ -157,6 +159,11 @@ function renderStartPage() {
       <div class="card">
         <div class="h1">Welcome</div>
         <p class="p">Run the Every Ride March Magic Bracket Challenge on March 14, 2026. Experience attractions, earn points, and auto-open tweet drafts.</p>
+        <div class="btnRow" style="margin-top:12px;">
+          <button id="rulesBtn" class="btn" type="button">Rules</button>
+          <button id="bracketBtn" class="btn" type="button">Bracket</button>
+        </div>
+
       </div>
 
       ${resume ? `
@@ -179,7 +186,6 @@ function renderStartPage() {
 
         <div class="btnRow" style="margin-top:12px;">
           <button id="startBtn" class="btn btnPrimary" type="button">Start new bracket</button>
-          <button id="rulesBtn" class="btn" type="button">Rules</button>
             <button id="historyBtn" class="btn" type="button">Previous brackets</button>
         </div>
       </div>
@@ -206,6 +212,14 @@ function renderStartPage() {
       confirmText: "Resume run",
       confirmClass: "",
       onConfirm: () => handleResumeMostRecent()
+    });
+  });
+
+  document.getElementById("bracketBtn")?.addEventListener("click", () => {
+    openDialog({
+      title: "Bracket",
+      body: "Bracket view coming next (and will support printing).",
+      buttons: [{ text: "Close", className: "btn btnPrimary", action: () => closeDialog() }]
     });
   });
 
@@ -399,6 +413,8 @@ function ensureNextRoundIfReady(roundIdJustCompleted) {
    ========================= */
 
 function renderBracketPage() {
+  document.body.dataset.page = "bracket";
+
   if (!active?.bracket) {
     // Safety: if somehow missing, rebuild
     active.bracket = buildInitialBracket();

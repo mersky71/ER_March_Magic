@@ -603,3 +603,24 @@ body{
 /* Override any earlier opacity rules */
 .roundBtn{ opacity: 1; }
 .roundBtn:not(.isActive){ opacity: .35; }
+
+/* Start page has only one banner row, so reduce top padding */
+body[data-page="start"] .app{
+  padding-top: 64px;
+}
+
+/* Bottom bar should match current round color */
+.bottomBar, .bottombar, .footerBar, .bottomSafe, .bottomSpacer{
+  background: var(--roundColor) !important;
+}
+#bottomBar{
+  background: var(--roundColor) !important;
+}
+
+/* Round selector: stronger fade and bolder active border */
+.roundBtn:not(.isActive){ opacity: .25 !important; }
+.roundBtn.isActive{
+  opacity: 1 !important;
+  border-color: #000 !important;
+  box-shadow: 0 0 0 5px rgba(0,0,0,.28) !important;
+}
