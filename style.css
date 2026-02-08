@@ -575,3 +575,31 @@ body{
   width:100%;
   white-space: nowrap;
 }
+
+/* Round selector: stronger fade for non-active */
+.roundBtn:not(.isActive){
+  opacity: .35;
+}
+.roundBtn.isActive{
+  opacity: 1;
+  outline: none;
+  border-color: rgba(0,0,0,.75);
+  box-shadow: 0 0 0 3px rgba(0,0,0,.18);
+}
+
+.roundBtn{ color:#fff; }
+
+/* More menu: size to widest item and right-align */
+.menu{
+  width: max-content;
+  max-width: calc(100vw - 24px);
+}
+.menu__item{
+  text-align: right;
+}
+
+.btnPrimary{ color:#fff; }
+
+/* Override any earlier opacity rules */
+.roundBtn{ opacity: 1; }
+.roundBtn:not(.isActive){ opacity: .35; }

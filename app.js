@@ -633,17 +633,8 @@ function handlePickWinner(roundId, matchId, pickId) {
 
   // Tweet
   const attractionNumber = countDecisions(active);
-  
-
-const tweet = buildDecisionTweet(
-    roundId,
-    winner,
-    loser,
-    pts,
-    attractionNumber,
-    m.decidedAt
-  );
-
+  const matchupNumber = round.findIndex(x => x.id === matchId) + 1;
+  const tweet = buildDecisionTweet(attractionNumber, roundId, matchupNumber, winner, loser, pts, m.decidedAt);
   openTweetDraft(tweet);
 
   // Populate downstream rounds opportunistically
@@ -743,14 +734,14 @@ function rebuildRoundsFromEvents() {
   active.bracket.currentRoundId = "R1";
 }
 
-function buildDecisionTweet(roundId, winnerId, loserId, points, attractionNumber, timeISO) {
+function buildDecisionTweet(attractionNumber, roundId, matchupNumber, winnerId, loserId, points, timeISO) {
   const w = shortNameFor(winnerId);
   const l = shortNameFor(loserId);
   const timeStr = formatTime12(new Date(timeISO));
-
   const totalPts = computePointsTotal(); // already includes this decision
 
-  return `Attraction ${attractionNumber} (${roundId}). ${w} (${points} points) over ${l} at ${timeStr}.
+  return `Attraction ${attractionNumber}. ${w} (${points} points) at ${timeStr}.
+(Round ${roundId} Matchup ${matchupNumber} vs ${l})
 ${totalPts} points today`;
 }
 
