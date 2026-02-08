@@ -548,12 +548,12 @@ function renderMatchCard(roundId, m, idx) {
         <div class="pickRow">
           <button class="pickBtn ${aWinner ? "isWinner" : ""} ${aLoser ? "isLoser" : ""}"
             type="button" data-round="${roundId}" data-match="${m.id}" data-pick="${m.a}" data-land="${escapeHtml(ridesById.get(m.a)?.land || "TL")}">
-            <span>${escapeHtml(shortNameFor(m.a))} (${pointsA} pts)</span>
+            <span>${`<span class="seed">${escapeHtml(String(ridesById.get(m.a)?.seed ?? ""))}</span>${escapeHtml(shortNameFor(m.a))}`} (${pointsA} pts)</span>
           </button>
 
           <button class="pickBtn ${bWinner ? "isWinner" : ""} ${bLoser ? "isLoser" : ""}"
             type="button" data-round="${roundId}" data-match="${m.id}" data-pick="${m.b}" data-land="${escapeHtml(ridesById.get(m.b)?.land || "TL")}">
-            <span>${escapeHtml(shortNameFor(m.b))} (${pointsB} pts)</span>
+            <span>${`<span class="seed">${escapeHtml(String(ridesById.get(m.b)?.seed ?? ""))}</span>${escapeHtml(shortNameFor(m.b))}`} (${pointsB} pts)</span>
           </button>
         </div>
 

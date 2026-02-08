@@ -659,3 +659,20 @@ body[data-page="start"] .app{
 }
 
 .pickBtn{ padding:6px 10px; }
+
+/* v10.2: seed prefix */
+.seed{
+  font-size: 10px;
+  line-height: 1;
+  opacity: .75;
+  min-width: 20px;          /* aligns 1–16 */
+  display: inline-block;
+  text-align: right;
+  margin-right: 6px;
+}
+.pickBtn{
+  padding: 6px 10px;        /* a bit tighter to preserve space */
+}
+.pill{
+  padding: 6px 8px;
+}
