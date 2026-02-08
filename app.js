@@ -453,11 +453,16 @@ function renderMatchCard(roundId, m, idx) {
         </div>
 
         <div class="afterRow">
-          <div>
-            <div class="advancePill">${escapeHtml(advLabel)}</div>
-            <div class="smallText">${escapeHtml(decided ? completedLine : "Pick a winner to advance")}</div>
-          </div>
-
+          ${decided ? `
+            <div>
+              <div class="advancePill">${escapeHtml(advLabel)}</div>
+              <div class="smallText">${escapeHtml(completedLine)}</div>
+            </div>
+            <button class="smallBtn" type="button" data-round="${roundId}" data-undo="${m.key}">Undo</button>
+          ` : `
+            <div class="smallText">Pick a winner to advance</div>
+          `}
+        </div>
           ${decided ? `<button class="smallBtn" type="button" data-round="${roundId}" data-undo="${m.id}">Undo</button>` : ""}
         </div>
       </div>
