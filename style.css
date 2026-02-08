@@ -632,3 +632,30 @@ body[data-page="start"] .app{
 .pickBtn[data-land="FRL"]{ background: rgba(217,119,6,.12); border-color: rgba(217,119,6,.55); }
 .pickBtn[data-land="LS"]{ background: rgba(250,204,21,.14); border-color: rgba(250,204,21,.55); }
 .pickBtn[data-land="MS"]{ background: rgba(255,255,255,.24); border-color: rgba(255,255,255,.55); }
+
+.pickBtn[data-land="MS"]{ border-color: rgba(120,120,120,.85); }
+
+.pickBtn.winner[data-land="TL"]{ background: rgba(8,145,178,.22); }
+.pickBtn.winner[data-land="FL"]{ background: rgba(225,29,72,.20); }
+.pickBtn.winner[data-land="AL"]{ background: rgba(5,150,105,.20); }
+.pickBtn.winner[data-land="FRL"]{ background: rgba(217,119,6,.22); }
+.pickBtn.winner[data-land="LS"]{ background: rgba(250,204,21,.26); }
+.pickBtn.winner[data-land="MS"]{ background: rgba(200,200,200,.30); }
+
+.pickBtn.winner{ font-size:14px; }
+
+.roundBtn.isActive{
+  box-shadow:none !important;
+  border:3px solid #000 !important;
+}
+
+.seed{
+  font-size:10px;
+  opacity:.7;
+  margin-right:4px;
+  min-width:18px;
+  display:inline-block;
+  text-align:right;
+}
+
+.pickBtn{ padding:6px 10px; }
