@@ -25,7 +25,12 @@ const shareUpdateMenuBtn = document.getElementById("shareUpdateMenuBtn");
 const settingsMenuBtn = document.getElementById("settingsMenuBtn");
 const endToStartBtn = document.getElementById("endToStartBtn");
 
-const roundSelect = document.getElementById("roundSelect");
+\1
+
+function hasRoundSelect() {
+  return typeof roundSelect !== "undefined" && roundSelect;
+}
+
 const counterPill = document.getElementById("counterPill");
 
 let rides = [];
@@ -337,8 +342,7 @@ function renderBracketPage() {
   const roundDone = countRoundDecisions(roundId);
   const roundTotal = (active.bracket.rounds[roundId]?.length ?? roundMeta.matchups);
   counterPill.textContent = `Pts: ${pts}`;
-
-  roundSelect.disabled = false;
+  if (hasRoundSelect()) roundSelect.disabled = false;
   renderRoundSelect(roundId);
   // Round dropdown lives in the top bar
 
@@ -387,7 +391,7 @@ function renderRoundSelect(selectedRoundId) {
   }).join("");
 
   roundSelect.onchange = () => {
-    const rid = roundSelect.value;
+    const rid = (hasRoundSelect() ? roundSelect.value : "R1");
     if (!rid) return;
     if (!isRoundUnlocked(rid)) {
       renderRoundSelect(currentRoundId());
