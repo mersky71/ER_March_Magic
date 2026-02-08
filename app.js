@@ -187,7 +187,7 @@ function renderStartPage() {
         <div class="h1">Start a new bracket</div>
 
         <div class="formRow">
-          <div class="label">Tags and hashtags (appended to every tweet)</div>
+          <div class="label">Tags and hashtags (modify as needed)</div>
           <textarea id="tagsText" class="textarea" style="min-height:90px;">#ERBracketChallenge</textarea>
         </div>
 
@@ -758,13 +758,14 @@ function rebuildRoundsFromEvents() {
 }
 
 function buildDecisionTweet(attractionNumber, roundId, matchupNumber, winnerId, loserId, points, timeISO) {
+  const roundNum = String(roundId).replace(/^R/, "");
   const w = shortNameFor(winnerId);
   const l = shortNameFor(loserId);
   const timeStr = formatTime12(new Date(timeISO));
   const totalPts = computePointsTotal(); // already includes this decision
 
   return `Attraction ${attractionNumber}. ${w} (${points} points) at ${timeStr}.
-(Round ${roundId} Matchup ${matchupNumber} vs ${l})
+(Round ${roundNum} Matchup ${matchupNumber} vs ${l})
 ${totalPts} points today`;
 }
 

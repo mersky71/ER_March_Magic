@@ -659,3 +659,26 @@ body[data-page="start"] .app{
 }
 
 .pickBtn{ padding:6px 10px; }
+
+/* v11: winner pill matches ride button sizing */
+.pickBtn.winner{ font-size: 15px; padding: 6px 10px; }
+
+/* v11: seed tiny prefix */
+.seed{
+  font-size: 10px;
+  line-height: 1;
+  opacity: .75;
+  min-width: 20px;
+  display: inline-block;
+  text-align: right;
+  margin-right: 6px;
+}
+
+/* v11: active round = thick border, no glow */
+.roundBtn.isActive{
+  box-shadow:none !important;
+  border:3px solid #000 !important;
+}
+
+/* Main Street: darker silver outline */
+.pickBtn[data-land="MS"]{ border-color: rgba(120,120,120,.9) !important; }
