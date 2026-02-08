@@ -1,16 +1,16 @@
 [
   {
-    "id": "7D",
+    "id": "7 Dwarfs",
     "rideNumber": 1,
-    "shortName": "7D",
+    "shortName": "7 Dwarfs",
     "land": "FL",
     "pointsRound1": 20,
     "seed": 1
   },
   {
-    "id": "AO",
+    "id": "Astro Orbiter",
     "rideNumber": 2,
-    "shortName": "AO",
+    "shortName": "Astro Orbiter",
     "land": "TL",
     "pointsRound1": 10,
     "seed": 16
@@ -72,9 +72,9 @@
     "seed": 6
   },
   {
-    "id": "JC",
+    "id": "Jungle Cruise",
     "rideNumber": 10,
-    "shortName": "JC",
+    "shortName": "Jungle Cruise",
     "land": "AL",
     "pointsRound1": 15,
     "seed": 11
@@ -88,9 +88,9 @@
     "seed": 3
   },
   {
-    "id": "PplMover",
+    "id": "PeopleMover",
     "rideNumber": 12,
-    "shortName": "PplMover",
+    "shortName": "PeopleMover",
     "land": "TL",
     "pointsRound1": 10,
     "seed": 14
@@ -152,9 +152,9 @@
     "seed": 8
   },
   {
-    "id": "Mermaid",
+    "id": "Under the Sea",
     "rideNumber": 20,
-    "shortName": "Mermaid",
+    "shortName": "Under the Sea",
     "land": "FL",
     "pointsRound1": 5,
     "seed": 9
@@ -184,9 +184,9 @@
     "seed": 4
   },
   {
-    "id": "Fairyt. Hall",
+    "id": "Fairytale Hall",
     "rideNumber": 24,
-    "shortName": "Fairyt. Hall",
+    "shortName": "Fairytale Hall",
     "land": "FL",
     "pointsRound1": 10,
     "seed": 13
@@ -200,9 +200,9 @@
     "seed": 6
   },
   {
-    "id": "CBJ",
+    "id": "Country Bears",
     "rideNumber": 26,
-    "shortName": "CBJ",
+    "shortName": "Country Bears",
     "land": "FRL",
     "pointsRound1": 20,
     "seed": 11
@@ -216,9 +216,9 @@
     "seed": 3
   },
   {
-    "id": "Monsters",
+    "id": "Monsters Inc",
     "rideNumber": 28,
-    "shortName": "Monsters",
+    "shortName": "Monsters Inc",
     "land": "TL",
     "pointsRound1": 10,
     "seed": 14
