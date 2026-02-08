@@ -443,12 +443,12 @@ function renderMatchCard(roundId, m, idx) {
         <div class="pickRow">
           <button class="pickBtn ${aWinner ? "isWinner" : ""} ${aLoser ? "isLoser" : ""}"
             type="button" data-round="${roundId}" data-match="${m.id}" data-pick="${m.a}">
-            <span>${escapeHtml(shortNameFor(m.a))} (${pointsA})</span>
+            <span>${escapeHtml(shortNameFor(m.a))} (${pointsA} pts)</span>
           </button>
 
           <button class="pickBtn ${bWinner ? "isWinner" : ""} ${bLoser ? "isLoser" : ""}"
             type="button" data-round="${roundId}" data-match="${m.id}" data-pick="${m.b}">
-            <span>${escapeHtml(shortNameFor(m.b))} (${pointsB})</span>
+            <span>${escapeHtml(shortNameFor(m.b))} (${pointsB} pts)</span>
           </button>
         </div>
 
