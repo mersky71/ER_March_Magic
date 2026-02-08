@@ -762,11 +762,12 @@ function buildDecisionTweet(attractionNumber, roundId, matchupNumber, winnerId, 
   const l = shortNameFor(loserId);
   const timeStr = formatTime12(new Date(timeISO));
   const totalPts = computePointsTotal(); // already includes this decision
+  const roundNum = String(roundId).replace(/^R/, "");
 
-  return `Attraction ${attractionNumber}. ${w} (${points} points) at ${timeStr}.
-(Round ${roundId} Matchup ${matchupNumber} vs ${l})
-${totalPts} This ride: ${ridePoints} points
-Total today: ${totalPoints} points`;
+  return `Attraction ${attractionNumber}. ${w} at ${timeStr}
+(Round ${roundNum} Matchup ${matchupNumber} vs ${l})
+This ride: ${points} points
+Total today: ${totalPts} points`;
 }
 
 function openTweetDraft(mainText) {
