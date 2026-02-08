@@ -184,10 +184,10 @@ function renderStartPage() {
       ` : ""}
 
       <div class="card">
-        <div class="h1">Start a new bracket</div>
+        <div class="h1">Start a new challenge</div>
 
         <div class="formRow">
-          <div class="label">Tags and hashtags (appended to every tweet)</div>
+          <div class="label">Tags and hashtags (modify as needed)</div>
           <textarea id="tagsText" class="textarea" style="min-height:90px;">#ERBracketChallenge</textarea>
         </div>
 
@@ -524,7 +524,7 @@ function renderMatchCard(roundId, m, idx) {
   const a = ridesById.get(m.a);
   const b = ridesById.get(m.b);
 
-  const seedText = (a?.seed && b?.seed) ? `${a.seed} seed vs. ${b.seed} seed` : "";
+  const seedText = (a?.seed && b?.seed) ? `${a.seed} vs. ${b.seed} seed` : "";
 
   const pointsA = pointsForRideInRound(a, roundMeta);
   const pointsB = pointsForRideInRound(b, roundMeta);

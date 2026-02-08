@@ -660,19 +660,33 @@ body[data-page="start"] .app{
 
 .pickBtn{ padding:6px 10px; }
 
-/* v10.2: seed prefix */
-.seed{
-  font-size: 10px;
-  line-height: 1;
-  opacity: .75;
-  min-width: 20px;          /* aligns 1–16 */
-  display: inline-block;
-  text-align: right;
-  margin-right: 6px;
+
+/* v10.3: Start card layout closer to original app */
+.tagsBox{
+  width: 100%;
+  min-height: 120px;
+  resize: vertical;
+  border: 1px solid rgba(0,0,0,.15);
+  border-radius: 16px;
+  padding: 14px 16px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 18px;
+  line-height: 1.35;
+  background: #fff;
+  box-sizing: border-box;
 }
-.pickBtn{
-  padding: 6px 10px;        /* a bit tighter to preserve space */
+.fundBox{
+  width: 100%;
+  border: 1px solid rgba(0,0,0,.15);
+  border-radius: 999px;
+  padding: 14px 16px;
+  font-size: 18px;
+  background: #fff;
+  box-sizing: border-box;
 }
-.pill{
-  padding: 6px 8px;
+.fieldLabel{
+  margin-top: 14px;
+  margin-bottom: 8px;
+  color: rgba(0,0,0,.65);
+  font-size: 16px;
 }
