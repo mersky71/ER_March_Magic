@@ -1,226 +1,258 @@
 [
   {
-    "id": "r1",
-    "name": "Ride1",
-    "shortName": "Ride1",
-    "land": "Tomorrowland",
-    "basePoints": 10
+    "id": "7 Dwarfs",
+    "rideNumber": 1,
+    "shortName": "7 Dwarfs",
+    "land": "FL",
+    "pointsRound1": 20,
+    "seed": 1
   },
   {
-    "id": "r2",
-    "name": "Ride2",
-    "shortName": "Ride2",
-    "land": "Tomorrowland",
-    "basePoints": 10
+    "id": "Astro Orbiter",
+    "rideNumber": 2,
+    "shortName": "Astro Orbiter",
+    "land": "TL",
+    "pointsRound1": 10,
+    "seed": 16
   },
   {
-    "id": "r3",
-    "name": "Ride3",
-    "shortName": "Ride3",
-    "land": "Tomorrowland",
-    "basePoints": 10
+    "id": "Barnstormer",
+    "rideNumber": 3,
+    "shortName": "Barnstormer",
+    "land": "FL",
+    "pointsRound1": 5,
+    "seed": 8
   },
   {
-    "id": "r4",
-    "name": "Ride4",
-    "shortName": "Ride4",
-    "land": "Tomorrowland",
-    "basePoints": 10
+    "id": "Carpets",
+    "rideNumber": 4,
+    "shortName": "Carpets",
+    "land": "AL",
+    "pointsRound1": 5,
+    "seed": 9
   },
   {
-    "id": "r5",
-    "name": "Ride5",
-    "shortName": "Ride5",
-    "land": "Tomorrowland",
-    "basePoints": 10
+    "id": "Carrousel",
+    "rideNumber": 5,
+    "shortName": "Carrousel",
+    "land": "FL",
+    "pointsRound1": 5,
+    "seed": 5
   },
   {
-    "id": "r6",
-    "name": "Ride6",
-    "shortName": "Ride6",
-    "land": "Tomorrowland",
-    "basePoints": 10
+    "id": "COP",
+    "rideNumber": 6,
+    "shortName": "COP",
+    "land": "TL",
+    "pointsRound1": 10,
+    "seed": 12
   },
   {
-    "id": "r7",
-    "name": "Ride7",
-    "shortName": "Ride7",
-    "land": "Tomorrowland",
-    "basePoints": 10
+    "id": "Dumbo",
+    "rideNumber": 7,
+    "shortName": "Dumbo",
+    "land": "FL",
+    "pointsRound1": 5,
+    "seed": 4
   },
   {
-    "id": "r8",
-    "name": "Ride8",
-    "shortName": "Ride8",
-    "land": "Tomorrowland",
-    "basePoints": 10
+    "id": "HM",
+    "rideNumber": 8,
+    "shortName": "HM",
+    "land": "LS",
+    "pointsRound1": 15,
+    "seed": 13
   },
   {
-    "id": "r9",
-    "name": "Ride9",
-    "shortName": "Ride9",
-    "land": "Tomorrowland",
-    "basePoints": 10
+    "id": "IASW",
+    "rideNumber": 9,
+    "shortName": "IASW",
+    "land": "FL",
+    "pointsRound1": 10,
+    "seed": 6
   },
   {
-    "id": "r10",
-    "name": "Ride10",
-    "shortName": "Ride10",
-    "land": "Tomorrowland",
-    "basePoints": 10
+    "id": "Jungle Cruise",
+    "rideNumber": 10,
+    "shortName": "Jungle Cruise",
+    "land": "AL",
+    "pointsRound1": 15,
+    "seed": 11
   },
   {
-    "id": "r11",
-    "name": "Ride11",
-    "shortName": "Ride11",
-    "land": "Tomorrowland",
-    "basePoints": 10
+    "id": "Main St Ent",
+    "rideNumber": 11,
+    "shortName": "Main St Ent",
+    "land": "MS",
+    "pointsRound1": 10,
+    "seed": 3
   },
   {
-    "id": "r12",
-    "name": "Ride12",
-    "shortName": "Ride12",
-    "land": "Tomorrowland",
-    "basePoints": 10
+    "id": "PeopleMover",
+    "rideNumber": 12,
+    "shortName": "PeopleMover",
+    "land": "TL",
+    "pointsRound1": 10,
+    "seed": 14
   },
   {
-    "id": "r13",
-    "name": "Ride13",
-    "shortName": "Ride13",
-    "land": "Tomorrowland",
-    "basePoints": 10
+    "id": "Pirates",
+    "rideNumber": 13,
+    "shortName": "Pirates",
+    "land": "AL",
+    "pointsRound1": 15,
+    "seed": 7
   },
   {
-    "id": "r14",
-    "name": "Ride14",
-    "shortName": "Ride14",
-    "land": "Tomorrowland",
-    "basePoints": 10
+    "id": "Peter Pan",
+    "rideNumber": 14,
+    "shortName": "Peter Pan",
+    "land": "FL",
+    "pointsRound1": 20,
+    "seed": 10
   },
   {
-    "id": "r15",
-    "name": "Ride15",
-    "shortName": "Ride15",
-    "land": "Tomorrowland",
-    "basePoints": 10
+    "id": "Space",
+    "rideNumber": 15,
+    "shortName": "Space",
+    "land": "TL",
+    "pointsRound1": 20,
+    "seed": 2
   },
   {
-    "id": "r16",
-    "name": "Ride16",
-    "shortName": "Ride16",
-    "land": "Tomorrowland",
-    "basePoints": 10
+    "id": "Speedway",
+    "rideNumber": 16,
+    "shortName": "Speedway",
+    "land": "TL",
+    "pointsRound1": 10,
+    "seed": 15
   },
   {
-    "id": "r17",
-    "name": "Ride17",
-    "shortName": "Ride17",
-    "land": "Tomorrowland",
-    "basePoints": 10
+    "id": "Tiana",
+    "rideNumber": 17,
+    "shortName": "Tiana",
+    "land": "FRL",
+    "pointsRound1": 20,
+    "seed": 1
   },
   {
-    "id": "r18",
-    "name": "Ride18",
-    "shortName": "Ride18",
-    "land": "Tomorrowland",
-    "basePoints": 10
+    "id": "Teacups",
+    "rideNumber": 18,
+    "shortName": "Teacups",
+    "land": "FL",
+    "pointsRound1": 5,
+    "seed": 16
   },
   {
-    "id": "r19",
-    "name": "Ride19",
-    "shortName": "Ride19",
-    "land": "Tomorrowland",
-    "basePoints": 10
+    "id": "TRON",
+    "rideNumber": 19,
+    "shortName": "TRON",
+    "land": "TL",
+    "pointsRound1": 20,
+    "seed": 8
   },
   {
-    "id": "r20",
-    "name": "Ride20",
-    "shortName": "Ride20",
-    "land": "Tomorrowland",
-    "basePoints": 10
+    "id": "Under the Sea",
+    "rideNumber": 20,
+    "shortName": "Under the Sea",
+    "land": "FL",
+    "pointsRound1": 5,
+    "seed": 9
   },
   {
-    "id": "r21",
-    "name": "Ride21",
-    "shortName": "Ride21",
-    "land": "Tomorrowland",
-    "basePoints": 10
+    "id": "WDW RR",
+    "rideNumber": 21,
+    "shortName": "WDW RR",
+    "land": "MS",
+    "pointsRound1": 10,
+    "seed": 5
   },
   {
-    "id": "r22",
-    "name": "Ride22",
-    "shortName": "Ride22",
-    "land": "Tomorrowland",
-    "basePoints": 10
+    "id": "Pooh",
+    "rideNumber": 22,
+    "shortName": "Pooh",
+    "land": "FL",
+    "pointsRound1": 10,
+    "seed": 12
   },
   {
-    "id": "r23",
-    "name": "Ride23",
-    "shortName": "Ride23",
-    "land": "Tomorrowland",
-    "basePoints": 10
+    "id": "Hall of Pres",
+    "rideNumber": 23,
+    "shortName": "Hall of Pres",
+    "land": "LS",
+    "pointsRound1": 15,
+    "seed": 4
   },
   {
-    "id": "r24",
-    "name": "Ride24",
-    "shortName": "Ride24",
-    "land": "Tomorrowland",
-    "basePoints": 10
+    "id": "Fairytale Hall",
+    "rideNumber": 24,
+    "shortName": "Fairytale Hall",
+    "land": "FL",
+    "pointsRound1": 10,
+    "seed": 13
   },
   {
-    "id": "r25",
-    "name": "Ride25",
-    "shortName": "Ride25",
-    "land": "Tomorrowland",
-    "basePoints": 10
+    "id": "Belle",
+    "rideNumber": 25,
+    "shortName": "Belle",
+    "land": "FL",
+    "pointsRound1": 15,
+    "seed": 6
   },
   {
-    "id": "r26",
-    "name": "Ride26",
-    "shortName": "Ride26",
-    "land": "Tomorrowland",
-    "basePoints": 10
+    "id": "Country Bears",
+    "rideNumber": 26,
+    "shortName": "Country Bears",
+    "land": "FRL",
+    "pointsRound1": 20,
+    "seed": 11
   },
   {
-    "id": "r27",
-    "name": "Ride27",
-    "shortName": "Ride27",
-    "land": "Tomorrowland",
-    "basePoints": 10
+    "id": "Tiki Room",
+    "rideNumber": 27,
+    "shortName": "Tiki Room",
+    "land": "AL",
+    "pointsRound1": 10,
+    "seed": 3
   },
   {
-    "id": "r28",
-    "name": "Ride28",
-    "shortName": "Ride28",
-    "land": "Tomorrowland",
-    "basePoints": 10
+    "id": "Monsters Inc",
+    "rideNumber": 28,
+    "shortName": "Monsters Inc",
+    "land": "TL",
+    "pointsRound1": 10,
+    "seed": 14
   },
   {
-    "id": "r29",
-    "name": "Ride29",
-    "shortName": "Ride29",
-    "land": "Tomorrowland",
-    "basePoints": 10
+    "id": "Philharmagic",
+    "rideNumber": 29,
+    "shortName": "Philharmagic",
+    "land": "FL",
+    "pointsRound1": 5,
+    "seed": 7
   },
   {
-    "id": "r30",
-    "name": "Ride30",
-    "shortName": "Ride30",
-    "land": "Tomorrowland",
-    "basePoints": 10
+    "id": "Meet Ariel",
+    "rideNumber": 30,
+    "shortName": "Meet Ariel",
+    "land": "FL",
+    "pointsRound1": 15,
+    "seed": 10
   },
   {
-    "id": "r31",
-    "name": "Ride31",
-    "shortName": "Ride31",
-    "land": "Tomorrowland",
-    "basePoints": 10
+    "id": "Meet Mickey",
+    "rideNumber": 31,
+    "shortName": "Meet Mickey",
+    "land": "MS",
+    "pointsRound1": 10,
+    "seed": 2
   },
   {
-    "id": "r32",
-    "name": "Ride32",
-    "shortName": "Ride32",
-    "land": "Tomorrowland",
-    "basePoints": 10
+    "id": "Treehouse",
+    "rideNumber": 32,
+    "shortName": "Treehouse",
+    "land": "AL",
+    "pointsRound1": 5,
+    "seed": 15
   }
 ]
