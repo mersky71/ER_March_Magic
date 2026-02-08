@@ -542,3 +542,36 @@ body{
   font-weight: 900;
   font-size: 12px;
 }
+
+/* Primary buttons match current round */
+.btnPrimary{
+  background: var(--roundColor);
+  border-color: rgba(0,0,0,.08);
+}
+
+.roundBtn{
+  opacity: .75;
+}
+.roundBtn.isActive{
+  opacity: 1;
+  outline: 3px solid rgba(255,255,255,.75);
+  outline-offset: 2px;
+}
+
+.topbar__row--2 .iconBtn{
+  background: var(--roundColor);
+  color: #fff;
+  border: 1px solid rgba(0,0,0,.10);
+  font-weight: 900;
+}
+
+/* More menu: vertical list, no wrapping */
+.menu{
+  display: block;
+  width: min(320px, calc(100vw - 24px));
+}
+.menu__item{
+  display:block;
+  width:100%;
+  white-space: nowrap;
+}

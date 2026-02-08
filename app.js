@@ -148,6 +148,8 @@ function getResumeCandidate() {
 }
 
 function renderStartPage() {
+  applyRoundTheme("R1");
+
   const resume = getResumeCandidate();
 
   appEl.innerHTML = `
@@ -160,7 +162,7 @@ function renderStartPage() {
       ${resume ? `
         <div class="card">
           <div class="h1">Resume run</div>
-          <p class="p" style="margin-top:6px;">Last attraction: ${escapeHtml(resume.lastLabel)} • ${resume.decided}/31 completed</p>
+          <p class="p" style="margin-top:6px;">Last attraction: ${escapeHtml(resume.lastLabel)}<br/>${resume.decided}/31 attractions completed</p>
           <div class="btnRow" style="margin-top:12px;">
             <button id="resumeBtn" class="btn btnPrimary" type="button">Resume</button>
           </div>
@@ -177,7 +179,8 @@ function renderStartPage() {
 
         <div class="btnRow" style="margin-top:12px;">
           <button id="startBtn" class="btn btnPrimary" type="button">Start new bracket</button>
-          <button id="historyBtn" class="btn" type="button">Previous brackets</button>
+          <button id="rulesBtn" class="btn" type="button">Rules</button>
+            <button id="historyBtn" class="btn" type="button">Previous brackets</button>
         </div>
       </div>
     </div>
