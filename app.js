@@ -515,12 +515,7 @@ function isRoundUnlocked(roundId) {
 }
 
 function renderMatchCard(roundId, m, idx) {
-  
-  const roundNum = String(m.round).replace(/^R/, "");
-  const seedA = ridesById.get(m.a)?.seed;
-  const seedB = ridesById.get(m.b)?.seed;
-  const seedText = (seedA && seedB) ? `${seedA} seed vs. ${seedB} seed` : `—`;
-if (!m?.a || !m?.b) {
+  if (!m?.a || !m?.b) {
     const roundMeta2 = ROUNDS.find(r => r.id === roundId) || ROUNDS[0];
     return renderLockedMatchCard(roundId, idx, roundMeta2);
   }
@@ -528,6 +523,8 @@ if (!m?.a || !m?.b) {
   const roundMeta = ROUNDS.find(r => r.id === roundId) || ROUNDS[0];
   const a = ridesById.get(m.a);
   const b = ridesById.get(m.b);
+
+  const seedText = (a?.seed && b?.seed) ? `${a.seed} seed vs. ${b.seed} seed` : "";
 
   const pointsA = pointsForRideInRound(a, roundMeta);
   const pointsB = pointsForRideInRound(b, roundMeta);
@@ -545,8 +542,7 @@ if (!m?.a || !m?.b) {
   return `
     <div class="matchCard">
       <div class="matchHeader">
-        <div class="matchTitle">Matchup ${idx + 1} · ${escapeHtml(roundMeta.label)}</div>
-        <div class="matchMeta">${escapeHtml(decided ? roundId : roundId)}</div>
+        <div class="matchTitle">Matchup ${idx + 1} · ${escapeHtml(roundMeta.label)}${seedText ? ` · ${escapeHtml(seedText)}` : ""}</div>
       </div>
 
       <div class="matchBody">
