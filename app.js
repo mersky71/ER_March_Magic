@@ -155,7 +155,7 @@ function renderStartPage() {
     <div class="stack">
       <div class="card">
         <div class="h1">Welcome</div>
-        <p class="p">Run a 32-ride bracket. Pick winners, earn points, and auto-open tweet drafts.</p>
+        <p class="p">Run the Every Ride March Magic Bracket Challenge on March 14, 2026. Experience attractions, earn points, and auto-open tweet drafts.</p>
       </div>
 
       ${resume ? `
