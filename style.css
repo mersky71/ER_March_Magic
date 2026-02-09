@@ -675,8 +675,8 @@ body[data-page="start"] .app{
   border-radius: 16px;
   padding: 14px 16px;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-  font-size: 18px;
-  line-height: 1.35;
+  font-size: 14px;
+  line-height: 1.4;
   background: #fff;
   box-sizing: border-box;
 }
