@@ -660,13 +660,8 @@ body[data-page="start"] .app{
 
 .pickBtn{ padding:6px 10px; }
 
-/* v10.5: Start card fields like old app */
-.fieldLabel{
-  margin-top: 14px;
-  margin-bottom: 8px;
-  color: rgba(0,0,0,.65);
-  font-size: 16px;
-}
+
+/* v10.3: Start card layout closer to original app */
 .tagsBox{
   width: 100%;
   min-height: 120px;
@@ -688,4 +683,10 @@ body[data-page="start"] .app{
   font-size: 18px;
   background: #fff;
   box-sizing: border-box;
+}
+.fieldLabel{
+  margin-top: 14px;
+  margin-bottom: 8px;
+  color: rgba(0,0,0,.65);
+  font-size: 16px;
 }
