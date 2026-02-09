@@ -184,18 +184,15 @@ function renderStartPage() {
       ` : ""}
 
       <div class="card">
-        <div class="h1">Start a new bracket</div>
+        <div class="h1">Start a new challenge</div>
 
-        <div class="formRow">
-          <div class="label">Tags and hashtags (modify as needed) (appended to every tweet)</div>
-          <textarea  id="tagsText" class="textarea" style="min-height:90px;" class="tagsBox">${escapeHtml(active?.settings?.tagsText || DEFAULT_TAGS)}</textarea>
+        <div class="fieldLabel">Tags and hashtags (modify as needed)</div>
+        <textarea id="tagsText" class="tagsBox">${escapeHtml(active?.settings?.tagsText || DEFAULT_TAGS)}</textarea>
 
-      <div class="fieldLabel">My fundraising link (modify as needed)</div>
-      <input id="fundLinkText" class="fundBox" type="text" value="${escapeHtml(active?.settings?.fundraisingLink || "")}" placeholder="https://…">
-        </div>
-
-        <div class="btnRow" style="margin-top:12px;">
-          <button id="startBtn" class="btn btnPrimary" type="button">Start new bracket</button>
+        <div class="fieldLabel">My fundraising link (modify as needed)</div>
+        <input id="fundLinkText" class="fundBox" type="text" value="${escapeHtml(active?.settings?.fundraisingLink || "")}" placeholder="https://…">
+<div class="btnRow" style="margin-top:12px;">
+          <button id="startBtn" class="btn btnPrimary" type="button">Start new challenge</button>
             <button id="historyBtn" class="btn" type="button">Previous brackets</button>
         </div>
       </div>
@@ -545,7 +542,7 @@ function renderMatchCard(roundId, m, idx) {
   return `
     <div class="matchCard">
       <div class="matchHeader">
-        <div class="matchTitle">Matchup ${idx + 1} · ${escapeHtml(roundMeta.label)}${seedText ? ` · ${escapeHtml(seedText)}` : ""}</div>
+        <div class="matchTitle">Matchup ${idx + 1} · ${escapeHtml(roundMeta.label)}${seedText ? " · " + escapeHtml(seedText) : ""}</div>
       </div>
 
       <div class="matchBody">
