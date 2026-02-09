@@ -187,7 +187,7 @@ function renderStartPage() {
         <div class="h1">Start a new challenge</div>
 
         <div class="fieldLabel">Tags and hashtags (modify as needed)</div>
-        <textarea id="tagsText" class="textarea tagsBox">#ERMarchMagic @RideEvery\n\nHelp me support @GKTWVillage by donating\nat the link below</textarea>
+        <textarea id="tagsText" class="textarea tagsBox">#ERMarchMagic @RideEvery\n\nHelp me support @GKTWVillage by donating at the link below</textarea>
 
         <div class="fieldLabel">My fundraising link (modify as needed)</div>
         <input id="fundLinkText" class="fundBox" type="text" value="${escapeHtml(active?.settings?.fundraisingLink || "")}" placeholder="https://…">
@@ -499,26 +499,6 @@ function renderRoundBar(selectedRoundId) {
   });
 }
 
-
-function landThemeFromCode(code){
-  const c = String(code || "TL").toUpperCase();
-  // Background colors are defined in CSS as variables in :root
-  const map = {
-    TL: "var(--landTomorrowland)",
-    FL: "var(--landFantasyland)",
-    AL: "var(--landAdventureland)",
-    FRL: "var(--landFrontierland)",
-    LS: "var(--landLibertySquare)",
-    MS: "var(--landMainStreet)"
-  };
-  const bg = map[c] || map.TL;
-  // Main Street is white; Liberty Square is bright yellow—use dark text
-  const darkText = (c === "MS" || c === "LS");
-  const text = darkText ? "#111827" : "#ffffff";
-  const border = (c === "MS") ? "rgba(107,114,128,.65)" : "rgba(17,24,39,.14)";
-  return { bg, text, border };
-}
-
 function applyRoundTheme(roundId) {
   const map = {
     R1: "var(--roundR1)",
@@ -558,9 +538,8 @@ function renderMatchCard(roundId, m, idx) {
   const aLoser = decided && m.loser === m.a;
   const bLoser = decided && m.loser === m.b;
 
-  \1
+  const advLabel = decided ? `${shortNameFor(m.winner)} (${pointsForWinnerFromMatch(roundId, m)})` : "—";
   const winnerLand = decided ? (ridesById.get(m.winner)?.land || "TL") : "TL";
-  const winnerTheme = landThemeFromCode(winnerLand);
 
   return `
     <div class="matchCard">
@@ -584,7 +563,7 @@ function renderMatchCard(roundId, m, idx) {
         <div class="afterRow">
           ${decided ? `
             <div>
-              <div class="advancePill" style="background:${winnerTheme.bg}; color:${winnerTheme.text}; border-color:${winnerTheme.border};">${escapeHtml(advLabel)}</div>
+              <div class="advancePill pickBtn winner" data-land="${escapeHtml(winnerLand)}">${escapeHtml(advLabel)}</div>
               <div class="smallText">${escapeHtml(completedLine)}</div>
             </div>
             <button class="smallBtn" type="button" data-round="${roundId}" data-undo="${m.id}">Undo</button>
