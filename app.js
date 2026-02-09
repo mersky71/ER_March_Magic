@@ -42,6 +42,12 @@ const ROUNDS = [
   { id: "R5", label: "Round 5", matchups: 1, multiplier: 5 }
 ];
 
+const DEFAULT_TAGS = `#ERMarchMagic @RideEvery
+
+Help me support @GKTWVillage by donating
+at the link below`;
+
+
 init();
 
 async function init() {
@@ -159,6 +165,8 @@ function renderStartPage() {
 
   applyRoundTheme("R1");
 
+  const draft = loadDraftSettings();
+
   const resume = getResumeCandidate();
 
   appEl.innerHTML = `
@@ -187,10 +195,10 @@ function renderStartPage() {
         <div class="h1">Start a new challenge</div>
 
         <div class="fieldLabel">Tags and hashtags (modify as needed)</div>
-        <textarea id="tagsText" class="tagsBox">${escapeHtml(active?.settings?.tagsText || DEFAULT_TAGS)}</textarea>
+        <textarea id="tagsText" class="tagsBox">${escapeHtml(draft.tagsText)}</textarea>
 
         <div class="fieldLabel">My fundraising link (modify as needed)</div>
-        <input id="fundLinkText" class="fundBox" type="text" value="${escapeHtml(active?.settings?.fundraisingLink || "")}" placeholder="https://…">
+        <input id="fundLinkText" class="fundBox" type="text" value="${escapeHtml(draft.fundraisingLink)}" placeholder="https://…">
 <div class="btnRow" style="margin-top:12px;">
           <button id="startBtn" class="btn btnPrimary" type="button">Start new challenge</button>
             <button id="historyBtn" class="btn" type="button">Previous brackets</button>
