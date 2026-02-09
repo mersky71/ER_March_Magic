@@ -335,7 +335,7 @@ body{
 .advancePill{
   padding: 8px 10px;
   border-radius: 999px;
-  border: 1px solid rgba(17,24,39,.14);
+  border: 2px solid rgba(17,24,39,.14);
   background: rgba(34,211,238,.12);
   font-weight: 900;
   max-width: none;
@@ -626,24 +626,29 @@ body[data-page="start"] .app{
 }
 
 /* Land colors using abbreviations (override earlier full-name selectors) */
-.pickBtn[data-land="TL"]{ background: rgba(8,145,178,.12); border-color: rgba(8,145,178,.55); }
-.pickBtn[data-land="FL"]{ background: rgba(225,29,72,.10); border-color: rgba(225,29,72,.50); }
-.pickBtn[data-land="AL"]{ background: rgba(5,150,105,.10); border-color: rgba(5,150,105,.50); }
-.pickBtn[data-land="FRL"]{ background: rgba(217,119,6,.12); border-color: rgba(217,119,6,.55); }
-.pickBtn[data-land="LS"]{ background: rgba(250,204,21,.14); border-color: rgba(250,204,21,.55); }
-.pickBtn[data-land="MS"]{ background: rgba(255,255,255,.24); border-color: rgba(255,255,255,.55); }
+/* Neutralize land colors: make all ride buttons Main Street style (white) */
+.pickBtn[data-land="TL"],
+.pickBtn[data-land="FL"],
+.pickBtn[data-land="AL"],
+.pickBtn[data-land="FRL"],
+.pickBtn[data-land="LS"],
+.pickBtn[data-land="MS"]{
+  background: #ffffff;
+  border-color: rgba(120,120,120,.70);
+  color: #111827;
+}
 
-.pickBtn[data-land="MS"]{ border-color: rgba(120,120,120,.85); }
-
-.pickBtn.winner[data-land="TL"]{ background: rgba(8,145,178,.22); }
-.pickBtn.winner[data-land="FL"]{ background: rgba(225,29,72,.20); }
-.pickBtn.winner[data-land="AL"]{ background: rgba(5,150,105,.20); }
-.pickBtn.winner[data-land="FRL"]{ background: rgba(217,119,6,.22); }
-.pickBtn.winner[data-land="LS"]{ background: rgba(250,204,21,.26); }
-.pickBtn.winner[data-land="MS"]{ background: rgba(200,200,200,.30); }
+/* Winners stay white too (no land tint) */
+.pickBtn.winner[data-land="TL"],
+.pickBtn.winner[data-land="FL"],
+.pickBtn.winner[data-land="AL"],
+.pickBtn.winner[data-land="FRL"],
+.pickBtn.winner[data-land="LS"],
+.pickBtn.winner[data-land="MS"]{
+  background: #ffffff;
+}
 
 .pickBtn.winner{ font-size:14px; }
-
 .roundBtn.isActive{
   box-shadow:none !important;
   border:3px solid #000 !important;
