@@ -48,13 +48,6 @@ async function init() {
   setupMoreMenu();
 
   rides = await fetch("./rides.json").then(r => r.json());
-  // Normalize ride schema
-  rides = (Array.isArray(rides) ? rides : []).map(r => ({
-    ...r,
-    basePoints: Number(r?.basePoints ?? r?.pointsRound1 ?? r?.points ?? 10),
-    seed: Number(r?.seed ?? 0),
-    land: String(r?.land ?? "TL")
-  }));
   ridesById = new Map(rides.map(r => [r.id, r]));
 
   active = loadActiveRun();
@@ -184,15 +177,15 @@ function renderStartPage() {
       ` : ""}
 
       <div class="card">
-        <div class="h1">Start a new challenge</div>
+        <div class="h1">Start a new bracket</div>
 
-        <div class="fieldLabel">Tags and hashtags (modify as needed)</div>
-        <textarea id="tagsText" class="textarea tagsBox">#ERMarchMagic @RideEvery\n\nHelp me support @GKTWVillage by donating\nat the link below</textarea>
+        <div class="formRow">
+          <div class="label">Tags and hashtags (appended to every tweet)</div>
+          <textarea id="tagsText" class="textarea" style="min-height:90px;">#ERBracketChallenge</textarea>
+        </div>
 
-        <div class="fieldLabel">My fundraising link (modify as needed)</div>
-        <input id="fundLinkText" class="fundBox" type="text" value="${escapeHtml(active?.settings?.fundraisingLink || "")}" placeholder="https://…">
-<div class="btnRow" style="margin-top:12px;">
-          <button id="startBtn" class="btn btnPrimary" type="button">Start new challenge</button>
+        <div class="btnRow" style="margin-top:12px;">
+          <button id="startBtn" class="btn btnPrimary" type="button">Start new bracket</button>
             <button id="historyBtn" class="btn" type="button">Previous brackets</button>
         </div>
       </div>
@@ -201,8 +194,7 @@ function renderStartPage() {
 
   document.getElementById("startBtn")?.addEventListener("click", () => {
     const tagsText = (document.getElementById("tagsText")?.value ?? "").trim();
-    const fundraisingLink = (document.getElementById("fundLinkText")?.value ?? "").trim();
-    active = startNewRun({ tagsText, fundraisingLink });
+    active = startNewRun({ tagsText });
     active.bracket = buildInitialBracket();
     saveActiveRun(active);
 
@@ -525,8 +517,6 @@ function renderMatchCard(roundId, m, idx) {
   const a = ridesById.get(m.a);
   const b = ridesById.get(m.b);
 
-  const seedText = (a?.seed && b?.seed) ? `${a.seed} vs. ${b.seed} seed` : "";
-
   const pointsA = pointsForRideInRound(a, roundMeta);
   const pointsB = pointsForRideInRound(b, roundMeta);
 
@@ -543,18 +533,19 @@ function renderMatchCard(roundId, m, idx) {
   return `
     <div class="matchCard">
       <div class="matchHeader">
-        <div class="matchTitle">Matchup ${idx + 1} · ${escapeHtml(roundMeta.label)}${seedText ? " · " + escapeHtml(seedText) : ""}</div>
+        <div class="matchTitle">Matchup ${idx + 1} · ${escapeHtml(roundMeta.label)}</div>
+        <div class="matchMeta">${escapeHtml(decided ? roundId : roundId)}</div>
       </div>
 
       <div class="matchBody">
         <div class="pickRow">
           <button class="pickBtn ${aWinner ? "isWinner" : ""} ${aLoser ? "isLoser" : ""}"
-            type="button" data-round="${roundId}" data-match="${m.id}" data-pick="${m.a}" data-land="${escapeHtml(ridesById.get(m.a)?.land || "TL")}">
+            type="button" data-round="${roundId}" data-match="${m.id}" data-pick="${m.a}" data-land="${escapeHtml(ridesById.get(m.a)?.land || "Tomorrowland")}">
             <span>${escapeHtml(shortNameFor(m.a))} (${pointsA} pts)</span>
           </button>
 
           <button class="pickBtn ${bWinner ? "isWinner" : ""} ${bLoser ? "isLoser" : ""}"
-            type="button" data-round="${roundId}" data-match="${m.id}" data-pick="${m.b}" data-land="${escapeHtml(ridesById.get(m.b)?.land || "TL")}">
+            type="button" data-round="${roundId}" data-match="${m.id}" data-pick="${m.b}" data-land="${escapeHtml(ridesById.get(m.b)?.land || "Tomorrowland")}">
             <span>${escapeHtml(shortNameFor(m.b))} (${pointsB} pts)</span>
           </button>
         </div>
@@ -659,9 +650,7 @@ function handlePickWinner(roundId, matchId, pickId) {
   // Tweet
   const attractionNumber = countDecisions(active);
   const matchupNumber = round.findIndex(x => x.id === matchId) + 1;
-  const tagsText = active?.settings?.tagsText ?? active?.settings?.tweetTags ?? "";
-  const fundraisingLink = active?.settings?.fundraisingLink ?? "";
-  const tweet = buildDecisionTweet(attractionNumber, roundId, matchupNumber, winner, loser, pts, m.decidedAt, tagsText, fundraisingLink);
+  const tweet = buildDecisionTweet(attractionNumber, roundId, matchupNumber, winner, loser, pts, m.decidedAt);
   openTweetDraft(tweet);
 
   // Populate downstream rounds opportunistically
@@ -761,26 +750,15 @@ function rebuildRoundsFromEvents() {
   active.bracket.currentRoundId = "R1";
 }
 
-function buildDecisionTweet(attractionNumber, roundId, matchupNumber, winnerId, loserId, points, timeISO, tagsText, fundraisingLink) {
+function buildDecisionTweet(attractionNumber, roundId, matchupNumber, winnerId, loserId, points, timeISO) {
   const w = shortNameFor(winnerId);
   const l = shortNameFor(loserId);
   const timeStr = formatTime12(new Date(timeISO));
   const totalPts = computePointsTotal(); // already includes this decision
-  const roundNum = String(roundId).replace(/^R/, "");
 
-  const base = `Attraction ${attractionNumber}. ${w} at ${timeStr}
-(Round ${roundNum} Matchup ${matchupNumber} vs ${l})
-This ride: ${points} points
-Total today: ${totalPts} points`;
-
-  const tags = (tagsText || "").trim();
-  const link = (fundraisingLink || "").trim();
-
-  // Append hashtags block (and link if present) separated by blank line, like the old app.
-  let tail = "";
-  if (tags) tail += `\n\n${tags}`;
-  if (link) tail += `${tail ? "\n" : "\n\n"}${link}`;
-  return base + tail;
+  return `Attraction ${attractionNumber}. ${w} (${points} points) at ${timeStr}.
+(Round ${roundId} Matchup ${matchupNumber} vs ${l})
+${totalPts} points today`;
 }
 
 function openTweetDraft(mainText) {
@@ -805,7 +783,7 @@ function openSettingsDialog() {
     body: "This is appended to every tweet (hashtags, etc.).",
     content: `
       <div class="formRow">
-        <div class="label">Tags and hashtags (modify as needed)</div>
+        <div class="label">Tags and hashtags</div>
         <textarea id="settingsTags" class="textarea" style="min-height:120px;">${escapeHtml(currentTags)}</textarea>
       </div>
     `,
