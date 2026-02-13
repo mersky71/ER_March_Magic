@@ -992,7 +992,50 @@ const yBase = Array.from({ length: teams }, (_, i) => {
   ctx.fillText("CHAMP", xChamp + colTextW / 2, 78);
 
   // Draw blank bracket + entries round by round (fully connected), left-to-right
-  const rounds = run?.bracket?.rounds || {};
+  const originalRounds = run?.bracket?.rounds || {};
+
+// For the bracket image we want to show advancement as soon as a winner exists,
+// even if the next-round matchup isn't "enabled" yet in the UI.
+// So we derive a rounds structure by propagating winners forward (without setting next-round winners).
+const rounds = (() => {
+  let derived;
+  try {
+    derived = JSON.parse(JSON.stringify(originalRounds));
+  } catch {
+    derived = {};
+    // shallow-ish fallback
+    for (const k in originalRounds) derived[k] = originalRounds[k];
+  }
+
+  const ensureMatch = (rKey, mKey) => {
+    if (!derived[rKey]) derived[rKey] = { matches: {} };
+    if (!derived[rKey].matches) derived[rKey].matches = {};
+    if (!derived[rKey].matches[mKey]) derived[rKey].matches[mKey] = { a: null, b: null, winner: null };
+    return derived[rKey].matches[mKey];
+  };
+
+  // Propagate winners forward (R1->R2 ... R4->R5)
+  for (let r = 1; r <= 4; r++) {
+    const rKey = `R${r}`;
+    const nextRKey = `R${r + 1}`;
+    const matchCount = 32 / Math.pow(2, r); // 16,8,4,2
+    for (let m = 1; m <= matchCount; m++) {
+      const mKey = `M${m}`;
+      const src = derived?.[rKey]?.matches?.[mKey];
+      const win = src?.winner;
+      if (!win) continue;
+
+      const nextM = Math.ceil(m / 2);
+      const nextMKey = `M${nextM}`;
+      const slot = (m % 2 === 1) ? "a" : "b";
+
+      const tgt = ensureMatch(nextRKey, nextMKey);
+      if (!tgt[slot]) tgt[slot] = win;
+    }
+  }
+
+  return derived;
+})();
 
   for (let r = 0; r < roundIds.length; r++) {
     const rid = roundIds[r];
