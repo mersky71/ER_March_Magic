@@ -953,8 +953,12 @@ function buildBracketUpdateImage(run) {
     ctx.lineTo(x2, y2);
     ctx.stroke();
   }
+  function getRideById(id) {
+    return ridesById.get(id);
+  }
 
   function entryText(entryId, winnerId, winnerPoints) {
+entryId, winnerId, winnerPoints) {
     if (!entryId) return "";
     const ride = getRideById(entryId);
     if (!ride) return "";
@@ -968,13 +972,10 @@ function buildBracketUpdateImage(run) {
   // Determine points for a given matchup's winner (per round multiplier already in app logic)
   function winnerPointsForMatch(roundNum, winnerId) {
     if (!winnerId) return null;
-    // Use existing scoring: ride.points * roundMultiplier (already in run.pointsToday). We need matchup points.
-    // In this app, per-round points are computed in getMatchPoints(). Reuse it if present.
-    if (typeof getMatchPoints === "function") return getMatchPoints(roundNum, winnerId);
-    const ride = getRideById(winnerId);
-    const base = ride?.points || 0;
-    const mult = roundNum; // fallback
-    return base * mult;
+    const roundId = "R" + String(roundNum);
+    const roundMeta = ROUNDS.find(r => r.id === roundId) || ROUNDS[0];
+    const ride = ridesById.get(winnerId);
+    return pointsForRideInRound(ride, roundMeta);
   }
 
   // Y coordinates (tight but readable)
