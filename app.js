@@ -896,7 +896,7 @@ function buildBracketUpdateImage(run) {
   const r1Pitch = usableH / teamsPerSide;
 
   // Column widths — text blocks are narrow because we’re not using boxes.
-  const SCALE = 0.70; // shrink rounds 1–3 columns ~30%
+  const SCALE = 0.80; // shrink rounds 1–3 columns ~20%
   const colTextW = Math.round(210 * SCALE); // text start area (seed + short name)
   const connW = Math.round(38 * SCALE);     // connector horizontal run between rounds
   const colGap = Math.round(12 * SCALE);
@@ -988,8 +988,13 @@ function buildBracketUpdateImage(run) {
   const yR1 = Array.from({ length: teamsPerSide }, (_, i) => topY + r1Pitch * (i + 0.5));
   const yR2 = Array.from({ length: 8 }, (_, i) => (yR1[i*2] + yR1[i*2 + 1]) / 2);
   const yR3 = Array.from({ length: 4 }, (_, i) => (yR2[i*2] + yR2[i*2 + 1]) / 2);
-  const ySemiTop = top + usableH * 0.26;
-  const ySemiBot = top + usableH * 0.74;
+  // Final Four positioning:
+  // Place the left-side semifinal (R4[0]) in the *upper* half, roughly aligned with the
+  // 8 vs 9 seed area (Round 1 matchup #2), and the right-side semifinal (R4[1]) in the
+  // lower half. Using Round 2 midpoints keeps this layout tied to the same vertical
+  // rhythm as the earlier rounds.
+  const ySemiTop = yR2[1];
+  const ySemiBot = yR2[6];
   const yFinal = top + usableH * 0.50;
 
   // Draw left side: R1->R2->R3 with classic bracket connectors
