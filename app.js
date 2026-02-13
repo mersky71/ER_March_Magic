@@ -921,7 +921,7 @@ const yBase = Array.from({ length: teams }, (_, i) => {
 
   // Column widths (compact; leaves room for a champion column)
   const x0 = 70;
-  const colTextW = 200; // tighter columns
+  const colTextW = 210; // tighter columns
   const connW = 25;
   const colGap = 15;
   const linePad = 10;
@@ -970,12 +970,12 @@ const yBase = Array.from({ length: teams }, (_, i) => {
     ctx.stroke();
   }
 
-  function drawEntryText(x, y, id, isWinner, pts) {
+  function drawEntryText(x, y, id, isWinner, pts, decided = false) {
     if (!id) return;
     const base = labelFor(id);
     const text = (isWinner && pts) ? `${base} (${pts})` : base;
 
-    ctx.fillStyle = isWinner ? "#111827" : "rgba(17,24,39,.80)";
+    ctx.fillStyle = decided ? (isWinner ? "#16a34a" : "#dc2626") : "rgba(17,24,39,.80)";
     ctx.font = fontEntry;
     ctx.textAlign = "left";
     ctx.textBaseline = "bottom";
@@ -1027,8 +1027,8 @@ const yBase = Array.from({ length: teams }, (_, i) => {
         const win = mm.winner || null;
         const pts = win ? winnerPoints(rid, mm) : 0;
 
-        drawEntryText(xText, yA, a, win === a, (win === a) ? pts : 0);
-        drawEntryText(xText, yB, b, win === b, (win === b) ? pts : 0);
+        drawEntryText(xText, yA, a, win === a, (win === a) ? pts : 0, !!win);
+        drawEntryText(xText, yB, b, win === b, (win === b) ? pts : 0, !!win);
       }
     }
   }
