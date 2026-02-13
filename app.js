@@ -1002,6 +1002,8 @@ function buildBracketUpdateImage(run) {
     const r1 = run.bracket.rounds.R1 || [];
     const r2 = run.bracket.rounds.R2 || [];
     const r3 = run.bracket.rounds.R3 || [];
+  const r4 = rounds.R4 || [];
+  const r5 = rounds.R5 || [];
 
     // Round 1: matchups 0..7 (16 entries)
     for (let m = 0; m < 8; m++) {
@@ -1174,128 +1176,109 @@ function buildBracketUpdateImage(run) {
   drawSideLeft();
   drawSideRight();
 
-  
-  // Semifinals (R4) and Final (R5)
-  // We draw a dedicated "Final Four" module in the middle:
-  //  - Top module: both semifinalists come from the LEFT side (R4[0]) and wrap (U-turn) toward the center.
-  //  - Bottom module: both semifinalists come from the RIGHT side (R4[1]) and wrap (U-turn) toward the center.
-  // These modules are intentionally NOT connected back to the R3 columns (cleaner + avoids spaghetti lines).
+  // --- Final Four / Finals / Champion center module ---
+  // We draw a compact center bracket using R4 (semifinals) and R5 (final).
+  // This module is intentionally independent of the side brackets so it can be positioned freely.
 
-  const dyFinal = r1Pitch * 0.34; // vertical offset used by the final matchup entries
+  const semiTop = r4[0] || { a: null, b: null, winner: null };
+  const semiBot = r4[1] || { a: null, b: null, winner: null };
+  const finalM  = r5[0] || { a: null, b: null, winner: null };
 
-  function drawFinalFourTop(mm) {
-    if (!mm) return;
-    const xText = xFinal - (semiTextW + colGap * 1.15); // left-aligned semis
-    const xJ = xText + semiTextW + colGap * 0.35;       // junction for the semi bracket
-    const xWin = xJ + colGap * 0.55;                    // start of winner line to the right
-    const xOuter = xWin + colGap * 0.75;                // outer edge for the U-turn
+  // Column header
+  drawText(Math.floor(W / 2), headerY + 6, "Final Four", 12, "center", "#6b7280", 700);
 
-    const yMid = yFinal - usableH * 0.18;
-    const y1 = yMid - r1Pitch * 0.38;
-    const y2 = yMid + r1Pitch * 0.38;
-    const yW = yMid + r1Pitch * 0.55; // winner below semis (matches your sketch)
+  // Geometry
+  const cx = Math.floor(W / 2);
+  const topY = Math.floor(headerY + 90);
+  const botY = Math.floor(H - 220);
+  const semiGap = 36;               // vertical gap between the two semifinalist lines
+  const semiTextX = cx - 140;       // where semifinalist text starts
+  const semiLineX0 = cx - 160;      // where semifinalist horizontal lines start
+  const semiLineX1 = cx + 40;       // where semifinalist horizontal lines end (into the bracket)
+  const semiJoinX = cx + 40;        // x position of the semi join vertical
+  const semiOutX = cx + 120;        // output x (where finalist line sits)
+  const finalistX = cx + 64;        // text position for finalist
 
-    // semi entry lines (short underlines)
-    drawLine(xText - 6, y1, xText + semiTextW - 18, y1);
-    drawEntry(xText, y1 - 2, mm.a, mm.seedA, mm.pointsA, mm.winner === "A");
+  const finalsY = Math.floor(H / 2) + 10;
+  const finalsLineX0 = cx - 60;
+  const finalsLineX1 = cx + 60;
+  const champY = finalsY - 80;
 
-    drawLine(xText - 6, y2, xText + semiTextW - 18, y2);
-    drawEntry(xText, y2 - 2, mm.b, mm.seedB, mm.pointsB, mm.winner === "B");
+  function drawSemiBlock(yTop, matchup, roundKey, labelWinnerOut) {
+    const y1 = yTop;
+    const y2 = yTop + semiGap;
+    const yMid = Math.floor((y1 + y2) / 2);
 
-    // bracket connectors to junction
-    drawLine(xText + semiTextW - 18, y1, xJ, y1);
-    drawLine(xText + semiTextW - 18, y2, xJ, y2);
-    drawLine(xJ, y1, xJ, y2);
+    // draw the two input lines
+    ctx.strokeStyle = lineColor;
+    ctx.lineWidth = lineWidth;
+    drawLine(semiLineX0, y1, semiLineX1, y1);
+    drawLine(semiLineX0, y2, semiLineX1, y2);
+    // join and output
+    drawLine(semiJoinX, y1, semiJoinX, y2);
+    drawLine(semiJoinX, yMid, semiOutX, yMid);
 
-    // winner line + label
-    drawLine(xJ, yW, xWin, yW);
-    const wName = mm.winner === "A" ? mm.a : (mm.winner === "B" ? mm.b : "");
-    const wSeed = mm.winner === "A" ? mm.seedA : (mm.winner === "B" ? mm.seedB : "");
-    const wPts  = mm.winner === "A" ? mm.pointsA : (mm.winner === "B" ? mm.pointsB : "");
-    if (wName) drawEntry(xWin + 8, yW - 2, wName, wSeed, wPts, true);
-
-    // U-turn into the final's top entry anchor (xFinal, yFinal - dyFinal)
-    drawLine(xWin, yW, xOuter, yW);
-    drawLine(xOuter, yW, xOuter, yFinal - dyFinal);
-    drawLine(xOuter, yFinal - dyFinal, xFinal, yFinal - dyFinal);
-  }
-
-  function drawFinalFourBottom(mm) {
-    if (!mm) return;
-    const xText = xFinal + colGap * 1.10;               // right-side semis
-    const xJ = xText - colGap * 0.35;                   // junction to the left
-    const xWin = xJ - colGap * 0.55;                    // winner line continues left
-    const xOuter = xWin - colGap * 0.75;                // outer edge for U-turn (left)
-
-    const yMid = yFinal + usableH * 0.18;
-    const y1 = yMid - r1Pitch * 0.38;
-    const y2 = yMid + r1Pitch * 0.38;
-    const yW = yMid - r1Pitch * 0.55; // winner above semis (matches your sketch)
-
-    // semi entry lines (short underlines)
-    drawLine(xText - 6, y1, xText + semiTextW - 18, y1);
-    drawEntry(xText, y1 - 2, mm.a, mm.seedA, mm.pointsA, mm.winner === "A");
-
-    drawLine(xText - 6, y2, xText + semiTextW - 18, y2);
-    drawEntry(xText, y2 - 2, mm.b, mm.seedB, mm.pointsB, mm.winner === "B");
-
-    // bracket connectors to junction (facing left)
-    drawLine(xText - 6, y1, xJ, y1);
-    drawLine(xText - 6, y2, xJ, y2);
-    drawLine(xJ, y1, xJ, y2);
-
-    // winner line + label (to the left)
-    drawLine(xJ, yW, xWin, yW);
-    const wName = mm.winner === "A" ? mm.a : (mm.winner === "B" ? mm.b : "");
-    const wSeed = mm.winner === "A" ? mm.seedA : (mm.winner === "B" ? mm.seedB : "");
-    const wPts  = mm.winner === "A" ? mm.pointsA : (mm.winner === "B" ? mm.pointsB : "");
-    if (wName) drawEntry(xWin - semiTextW + 10, yW - 2, wName, wSeed, wPts, true);
-
-    // U-turn into the final's bottom entry anchor (xFinal, yFinal + dyFinal)
-    drawLine(xWin, yW, xOuter, yW);
-    drawLine(xOuter, yW, xOuter, yFinal + dyFinal);
-    drawLine(xOuter, yFinal + dyFinal, xFinal, yFinal + dyFinal);
-  }
-
-  // Draw our two Final Four mini-brackets
-  drawFinalFourTop(r4[0]);
-  drawFinalFourBottom(r4[1]);
-// Final entries (R5[0])
-  const final = r5[0] || null;
-  if (final) {
-    const a = final.a || null;
-    const b = final.b || null;
-    const win = final.winner || null;
-    const pts = win ? winnerPoints("R5", final) : 0;
-
-    const dy = dyFinal;
-    // Final text width uses semiTextW for consistency
-    drawEntry(xFinal, yFinal - dy, a, win === a, win === a ? pts : 0);
-    drawEntry(xFinal, yFinal + dy, b, win === b, win === b ? pts : 0);
-
-    // Connector up to champion
-    const xEnd = xFinal + semiTextW;
-    const xJoin = xEnd + connW;
-    drawLine(xEnd, yFinal - dy, xJoin, yFinal - dy);
-    drawLine(xEnd, yFinal + dy, xJoin, yFinal + dy);
-    drawLine(xJoin, yFinal - dy, xJoin, yFinal + dy);
-
-    const champY = 42;
-    drawLine(xJoin, yFinal, xJoin, champY + 24);
-    drawLine(xJoin, champY + 24, xChamp - colGap/2, champY + 24);
-
-    // Champion text (top center, on a line)
-    const champ = final.winner || null;
-    if (champ) {
-      ctx.fillStyle = "#111827";
-      ctx.font = "900 26px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-      ctx.textAlign = "left";
-      ctx.fillText(labelFor(champ), xChamp, champY + 24);
+    // labels on the input lines
+    if (matchup?.a) {
+      const ptsA = matchup.winner === matchup.a ? winnerPoints(roundKey, matchup) : "";
+      drawText(semiTextX, y1 - 8, getRideLabel(matchup.a, ptsA), 13, "left", "#111827", 700);
     }
-  } else {
-    // Still show an empty champion header space for consistency
+    if (matchup?.b) {
+      const ptsB = matchup.winner === matchup.b ? winnerPoints(roundKey, matchup) : "";
+      drawText(semiTextX, y2 - 8, getRideLabel(matchup.b, ptsB), 13, "left", "#111827", 700);
+    }
+
+    // finalist label: winner of this semifinal (if present)
+    const outId = labelWinnerOut ? matchup?.winner : null;
+    if (outId) {
+      const ptsW = winnerPoints(roundKey, matchup);
+      drawText(finalistX, yMid - 8, getRideLabel(outId, ptsW), 13, "left", "#111827", 700);
+    }
+
+    return { yMid, outId };
   }
 
+  // Top semifinal (from left side of the bracket), output wraps toward finals
+  const top = drawSemiBlock(topY, semiTop, "R4", true);
+  // Bottom semifinal (from right side of the bracket), output wraps toward finals
+  const bot = drawSemiBlock(botY, semiBot, "R4", true);
+
+  // Finals line in the center
+  ctx.strokeStyle = lineColor;
+  ctx.lineWidth = lineWidth;
+  drawLine(finalsLineX0, finalsY, finalsLineX1, finalsY);
+  drawText(cx, finalsY - 34, "Final", 12, "center", "#6b7280", 700);
+
+  // Wrap the top finalist down into finals (U-turn)
+  if (top.outId) {
+    drawLine(semiOutX, top.yMid, semiOutX + 40, top.yMid);
+    drawLine(semiOutX + 40, top.yMid, semiOutX + 40, finalsY - 10);
+    drawLine(semiOutX + 40, finalsY - 10, finalsLineX1, finalsY - 10);
+  }
+  // Wrap the bottom finalist up into finals (U-turn)
+  if (bot.outId) {
+    drawLine(semiOutX, bot.yMid, semiOutX + 40, bot.yMid);
+    drawLine(semiOutX + 40, bot.yMid, semiOutX + 40, finalsY + 10);
+    drawLine(semiOutX + 40, finalsY + 10, finalsLineX1, finalsY + 10);
+  }
+
+  // Finals labels (if populated)
+  if (finalM?.a) {
+    const ptsA = finalM.winner === finalM.a ? winnerPoints("R5", finalM) : "";
+    drawText(cx - 110, finalsY - 8, getRideLabel(finalM.a, ptsA), 13, "left", "#111827", 700);
+  }
+  if (finalM?.b) {
+    const ptsB = finalM.winner === finalM.b ? winnerPoints("R5", finalM) : "";
+    drawText(cx - 110, finalsY + 18, getRideLabel(finalM.b, ptsB), 13, "left", "#111827", 700);
+  }
+
+  // Champion line + label
+  drawLine(cx - 80, champY, cx + 80, champY);
+  drawText(cx, champY - 26, "Champion", 12, "center", "#6b7280", 700);
+  if (finalM?.winner) {
+    const ptsC = winnerPoints("R5", finalM);
+    drawText(cx - 60, champY - 8, getRideLabel(finalM.winner, ptsC), 14, "left", "#111827", 800);
+  }
   return canvas.toDataURL("image/png");
 }
 
