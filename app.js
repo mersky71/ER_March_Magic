@@ -1174,45 +1174,93 @@ function buildBracketUpdateImage(run) {
   drawSideLeft();
   drawSideRight();
 
+  
   // Semifinals (R4) and Final (R5)
-  const r4 = run.bracket.rounds.R4 || [];
-  const r5 = run.bracket.rounds.R5 || [];
+  // We draw a dedicated "Final Four" module in the middle:
+  //  - Top module: both semifinalists come from the LEFT side (R4[0]) and wrap (U-turn) toward the center.
+  //  - Bottom module: both semifinalists come from the RIGHT side (R4[1]) and wrap (U-turn) toward the center.
+  // These modules are intentionally NOT connected back to the R3 columns (cleaner + avoids spaghetti lines).
 
-  // Left semi (R4[0]) at ySemiTop, right semi (R4[1]) at ySemiBot
-  function drawSemi(mm, x, y, side) {
-    const a = mm?.a || null;
-    const b = mm?.b || null;
-    const win = mm?.winner || null;
-    const pts = win ? winnerPoints("R4", mm) : 0;
+  const dyFinal = r1Pitch * 0.34; // vertical offset used by the final matchup entries
 
-    const dy = r1Pitch * 0.30;
-    drawEntry(x, y - dy, a, win === a, win === a ? pts : 0);
-    drawEntry(x, y + dy, b, win === b, win === b ? pts : 0);
+  function drawFinalFourTop(mm) {
+    if (!mm) return;
+    const xText = xFinal - (semiTextW + colGap * 1.15); // left-aligned semis
+    const xJ = xText + semiTextW + colGap * 0.35;       // junction for the semi bracket
+    const xWin = xJ + colGap * 0.55;                    // start of winner line to the right
+    const xOuter = xWin + colGap * 0.75;                // outer edge for the U-turn
 
-    // Connector to final (toward center)
-    const xEnd = x + semiTextW;
-    const xJoin = side === "L" ? (xEnd + connW) : (x - connW);
-    const xLine = side === "L" ? xEnd : (x - colGap/2);
-    drawLine(xLine, y - dy, xJoin, y - dy);
-    drawLine(xLine, y + dy, xJoin, y + dy);
-    drawLine(xJoin, y - dy, xJoin, y + dy);
+    const yMid = yFinal - usableH * 0.18;
+    const y1 = yMid - r1Pitch * 0.38;
+    const y2 = yMid + r1Pitch * 0.38;
+    const yW = yMid + r1Pitch * 0.55; // winner below semis (matches your sketch)
 
-    // go to final centerline
-    drawLine(xJoin, y, xFinal - (side === "L" ? colGap/2 : - (semiTextW + colGap/2)), y);
+    // semi entry lines (short underlines)
+    drawLine(xText - 6, y1, xText + semiTextW - 18, y1);
+    drawEntry(xText, y1 - 2, mm.a, mm.seedA, mm.pointsA, mm.winner === "A");
+
+    drawLine(xText - 6, y2, xText + semiTextW - 18, y2);
+    drawEntry(xText, y2 - 2, mm.b, mm.seedB, mm.pointsB, mm.winner === "B");
+
+    // bracket connectors to junction
+    drawLine(xText + semiTextW - 18, y1, xJ, y1);
+    drawLine(xText + semiTextW - 18, y2, xJ, y2);
+    drawLine(xJ, y1, xJ, y2);
+
+    // winner line + label
+    drawLine(xJ, yW, xWin, yW);
+    const wName = mm.winner === "A" ? mm.a : (mm.winner === "B" ? mm.b : "");
+    const wSeed = mm.winner === "A" ? mm.seedA : (mm.winner === "B" ? mm.seedB : "");
+    const wPts  = mm.winner === "A" ? mm.pointsA : (mm.winner === "B" ? mm.pointsB : "");
+    if (wName) drawEntry(xWin + 8, yW - 2, wName, wSeed, wPts, true);
+
+    // U-turn into the final's top entry anchor (xFinal, yFinal - dyFinal)
+    drawLine(xWin, yW, xOuter, yW);
+    drawLine(xOuter, yW, xOuter, yFinal - dyFinal);
+    drawLine(xOuter, yFinal - dyFinal, xFinal, yFinal - dyFinal);
   }
 
-  // Labels for center
-  ctx.textAlign = "center";
-  ctx.fillStyle = "rgba(17,24,39,.70)";
-  ctx.font = fontLabel;
-  ctx.fillText("Final Four", W/2, 96);
-  ctx.fillText("Final", W/2, yFinal - 70);
-  ctx.fillText("Champion", W/2, 74);
+  function drawFinalFourBottom(mm) {
+    if (!mm) return;
+    const xText = xFinal + colGap * 1.10;               // right-side semis
+    const xJ = xText - colGap * 0.35;                   // junction to the left
+    const xWin = xJ - colGap * 0.55;                    // winner line continues left
+    const xOuter = xWin - colGap * 0.75;                // outer edge for U-turn (left)
 
-  drawSemi(r4[0], xSemiL, ySemiTop, "L");
-  drawSemi(r4[1], xSemiR, ySemiBot, "R");
+    const yMid = yFinal + usableH * 0.18;
+    const y1 = yMid - r1Pitch * 0.38;
+    const y2 = yMid + r1Pitch * 0.38;
+    const yW = yMid - r1Pitch * 0.55; // winner above semis (matches your sketch)
 
-  // Final entries (R5[0])
+    // semi entry lines (short underlines)
+    drawLine(xText - 6, y1, xText + semiTextW - 18, y1);
+    drawEntry(xText, y1 - 2, mm.a, mm.seedA, mm.pointsA, mm.winner === "A");
+
+    drawLine(xText - 6, y2, xText + semiTextW - 18, y2);
+    drawEntry(xText, y2 - 2, mm.b, mm.seedB, mm.pointsB, mm.winner === "B");
+
+    // bracket connectors to junction (facing left)
+    drawLine(xText - 6, y1, xJ, y1);
+    drawLine(xText - 6, y2, xJ, y2);
+    drawLine(xJ, y1, xJ, y2);
+
+    // winner line + label (to the left)
+    drawLine(xJ, yW, xWin, yW);
+    const wName = mm.winner === "A" ? mm.a : (mm.winner === "B" ? mm.b : "");
+    const wSeed = mm.winner === "A" ? mm.seedA : (mm.winner === "B" ? mm.seedB : "");
+    const wPts  = mm.winner === "A" ? mm.pointsA : (mm.winner === "B" ? mm.pointsB : "");
+    if (wName) drawEntry(xWin - semiTextW + 10, yW - 2, wName, wSeed, wPts, true);
+
+    // U-turn into the final's bottom entry anchor (xFinal, yFinal + dyFinal)
+    drawLine(xWin, yW, xOuter, yW);
+    drawLine(xOuter, yW, xOuter, yFinal + dyFinal);
+    drawLine(xOuter, yFinal + dyFinal, xFinal, yFinal + dyFinal);
+  }
+
+  // Draw our two Final Four mini-brackets
+  drawFinalFourTop(r4[0]);
+  drawFinalFourBottom(r4[1]);
+// Final entries (R5[0])
   const final = r5[0] || null;
   if (final) {
     const a = final.a || null;
@@ -1220,7 +1268,7 @@ function buildBracketUpdateImage(run) {
     const win = final.winner || null;
     const pts = win ? winnerPoints("R5", final) : 0;
 
-    const dy = r1Pitch * 0.34;
+    const dy = dyFinal;
     // Final text width uses semiTextW for consistency
     drawEntry(xFinal, yFinal - dy, a, win === a, win === a ? pts : 0);
     drawEntry(xFinal, yFinal + dy, b, win === b, win === b ? pts : 0);
