@@ -932,7 +932,7 @@ const yBase = Array.from({ length: teams }, (_, i) => {
   const xChamp = xCols[xCols.length - 1] + colTextW + connW + colGap;
 
   // Typography
-  const fontEntry = "700 18px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  const fontEntry = "700 24px system-ui, -apple-system, Segoe UI, Roboto, Arial";
   const fontLabel = "800 18px system-ui, -apple-system, Segoe UI, Roboto, Arial";
 
   // Helpers (ride label + points)
@@ -941,11 +941,20 @@ const yBase = Array.from({ length: teams }, (_, i) => {
     return r?.seed ?? "";
   }
   function labelFor(id) {
-    if (!id) return "";
-    const seed = seedOf(id);
-    const s = shortNameFor(id);
-    return `${seed} ${s}`.trim();
-  }
+  if (!id) return "";
+  const rawSeed = seedOf(id);
+  const s = shortNameFor(id);
+
+  // Requested "visual" alignment using literal spaces (even though font isn't monospace).
+  // - Add 2 spaces BEFORE single-digit seeds
+  // - Add 2 spaces AFTER every seed
+  const seedStr0 = (rawSeed === null || rawSeed === undefined) ? "" : String(rawSeed).trim();
+  if (!seedStr0) return s;
+
+  const before = (seedStr0.length === 1) ? "  " : "";
+  const after = "  ";
+  return `${before}${seedStr0}${after}${s}`;
+}
   function winnerPoints(roundId, match) {
     try { return pointsForWinnerFromMatch(roundId, match) || 0; } catch { return 0; }
   }
@@ -969,8 +978,9 @@ const yBase = Array.from({ length: teams }, (_, i) => {
     ctx.fillStyle = isWinner ? "#111827" : "rgba(17,24,39,.80)";
     ctx.font = fontEntry;
     ctx.textAlign = "left";
-    ctx.textBaseline = "middle";
-    ctx.fillText(text, x, y);
+    ctx.textBaseline = "bottom";
+    const textOffset = 4;
+    ctx.fillText(text, x, y - textOffset);
   }
 
   // Round headers
