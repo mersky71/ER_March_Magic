@@ -1029,7 +1029,7 @@ const yBase = Array.from({ length: teams }, (_, i) => {
   const yChamp = (yEntries[4][0] + yEntries[4][1]) / 2;
 
   // Draw a visible champ line even before a winner is decided
-  drawLine(ctx, xChamp - linePad, yChamp, xChamp + colTextW, yChamp);
+  drawLine(xChamp - linePad, yChamp, xChamp + colTextW, yChamp);
 
   if (champId) {
     // Draw a bold champion name on top of the champion line
