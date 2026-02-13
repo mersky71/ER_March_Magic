@@ -998,44 +998,50 @@ const yBase = Array.from({ length: teams }, (_, i) => {
 // even if the next-round matchup isn't "enabled" yet in the UI.
 // So we derive a rounds structure by propagating winners forward (without setting next-round winners).
 const rounds = (() => {
-  let derived;
-  try {
-    derived = JSON.parse(JSON.stringify(originalRounds));
-  } catch {
-    derived = {};
-    // shallow-ish fallback
-    for (const k in originalRounds) derived[k] = originalRounds[k];
-  }
+      // Start from whatever the run has saved…
+      const originalRounds = run?.bracket?.rounds || {};
 
-  const ensureMatch = (rKey, mKey) => {
-    if (!derived[rKey]) derived[rKey] = { matches: {} };
-    if (!derived[rKey].matches) derived[rKey].matches = {};
-    if (!derived[rKey].matches[mKey]) derived[rKey].matches[mKey] = { a: null, b: null, winner: null };
-    return derived[rKey].matches[mKey];
-  };
+      // …but for the image we ALSO want to show advancement as soon as a winner exists,
+      // even if the next-round matchup is still “locked” in the UI.
+      //
+      // The saved bracket uses arrays per round: rounds.R1[matchIndex] = {a,b,winner,loser,...}
+      // So we build a deep-cloned set of arrays and then push winners forward into the next round.
+      const derived = JSON.parse(JSON.stringify(originalRounds));
 
-  // Propagate winners forward (R1->R2 ... R4->R5)
-  for (let r = 1; r <= 4; r++) {
-    const rKey = `R${r}`;
-    const nextRKey = `R${r + 1}`;
-    const matchCount = 32 / Math.pow(2, r); // 16,8,4,2
-    for (let m = 1; m <= matchCount; m++) {
-      const mKey = `M${m}`;
-      const src = derived?.[rKey]?.matches?.[mKey];
-      const win = src?.winner;
-      if (!win) continue;
+      const ensureRoundArray = (rid) => {
+        if (!Array.isArray(derived[rid])) derived[rid] = [];
+        return derived[rid];
+      };
 
-      const nextM = Math.ceil(m / 2);
-      const nextMKey = `M${nextM}`;
-      const slot = (m % 2 === 1) ? "a" : "b";
+      const ensureMatch = (rid, matchIndex) => {
+        const arr = ensureRoundArray(rid);
+        if (!arr[matchIndex]) arr[matchIndex] = { a: null, b: null, winner: null, loser: null };
+        return arr[matchIndex];
+      };
 
-      const tgt = ensureMatch(nextRKey, nextMKey);
-      if (!tgt[slot]) tgt[slot] = win;
-    }
-  }
+      // Propagate winners forward one round at a time
+      for (let r = 1; r <= 4; r++) {
+        const srcRid = `R${r}`;
+        const tgtRid = `R${r + 1}`;
+        const srcArr = ensureRoundArray(srcRid);
 
-  return derived;
-})();
+        for (let matchIndex = 0; matchIndex < srcArr.length; matchIndex++) {
+          const src = srcArr[matchIndex];
+          if (!src || !src.winner) continue;
+
+          const win = src.winner;
+          const tgtMatchIndex = Math.floor(matchIndex / 2);
+          const slot = matchIndex % 2 === 0 ? "a" : "b";
+
+          const tgt = ensureMatch(tgtRid, tgtMatchIndex);
+
+          // Only fill if empty; don't overwrite an already-populated slot.
+          if (!tgt[slot]) tgt[slot] = win;
+        }
+      }
+
+      return derived;
+    })();;
 
   for (let r = 0; r < roundIds.length; r++) {
     const rid = roundIds[r];
