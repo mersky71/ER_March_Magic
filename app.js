@@ -865,8 +865,8 @@ function openBracketImageDialog() {
 
 function buildBracketUpdateImage(run) {
   // Single, left-to-right 32-attraction bracket image
-  const W = 2400;
-  const H = 900;
+  const W = 1600;
+  const H = 1600;
 
   const canvas = document.createElement("canvas");
   canvas.width = W;
