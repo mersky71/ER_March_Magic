@@ -922,7 +922,7 @@ const yBase = Array.from({ length: teams }, (_, i) => {
 
   // Column widths (compact; leaves room for a champion column)
   const x0 = 70;
-  const colTextW = 211; // tighter columns
+  const colTextW = 210; // tighter columns
   const connW = 25;
   const colGap = 15;
   const linePad = 10;
@@ -960,25 +960,46 @@ const yBase = Array.from({ length: teams }, (_, i) => {
     minute: "2-digit",
   });
 
-  // Box position: to the right of the bracket body, left of the CHAMP column
-  const statsW = 380;
-  const statsH = 140;
-  const statsX = Math.min(W - marginR - statsW, xChamp - 20 - statsW);
+  // Stats box position: top-right, spanning the visual space over the R5 + CHAMP columns.
+  // We anchor the left edge to the start of the R5 column and let the box extend to the
+  // right margin so it doesn't drift back over the R4 geometry.
   const statsY = 120;
+  const statsX = Math.min(xCols[4] + 40, W - marginR - 320); // xCols[4] == R5 column start
+  const statsW = Math.max(320, W - marginR - statsX);
+  const statsH = 170;
+
+  const statsPad = 16;
+  const pointsBoxH = 56;
+  const pointsBoxY = statsY + 92;
 
   ctx.save();
   ctx.strokeStyle = "#999";
   ctx.lineWidth = 2;
   ctx.strokeRect(statsX, statsY, statsW, statsH);
 
+  // Centered, bold text for all lines
   ctx.fillStyle = "#111";
-  ctx.font = "20px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-  ctx.textAlign = "left";
+  ctx.textAlign = "center";
   ctx.textBaseline = "top";
 
-  ctx.fillText(`As of ${asOfStr} ET`, statsX + 14, statsY + 14);
-  ctx.fillText(`${matchupsDone} of ${totalMatchups} matchups complete`, statsX + 14, statsY + 54);
-  ctx.fillText(`${pointsTotal} points`, statsX + 14, statsY + 94);
+  ctx.font = "700 20px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  ctx.fillText(`As of ${asOfStr} ET`, statsX + statsW / 2, statsY + 16);
+  ctx.fillText(
+    `${matchupsDone} of ${totalMatchups} matchups complete`,
+    statsX + statsW / 2,
+    statsY + 48
+  );
+
+  // Inset points box (more prominent)
+  ctx.strokeRect(statsX + statsPad, pointsBoxY, statsW - statsPad * 2, pointsBoxH);
+  ctx.font = "800 34px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  ctx.textBaseline = "middle";
+  ctx.fillText(
+    `${pointsTotal} points`,
+    statsX + statsW / 2,
+    pointsBoxY + pointsBoxH / 2
+  );
+
   ctx.restore();
 
 
