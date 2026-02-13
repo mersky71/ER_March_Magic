@@ -97,8 +97,8 @@ function setupMoreMenu() {
   shareUpdateMenuBtn.addEventListener("click", () => {
     closeMore();
     if (!active) return;
-    openBracketImageDialog();
-  });
+    openBracketImageDialog().catch(() => {});
+});
 
   settingsMenuBtn.addEventListener("click", () => {
     closeMore();
@@ -826,13 +826,24 @@ function openSettingsDialog() {
   });
 }
 
-function openBracketImageDialog() {
+
+function loadImage(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = (e) => reject(e);
+    img.src = src;
+  });
+}
+async function openBracketImageDialog() {
   try {
     // Make sure downstream rounds are synced so later-round slots populate when ready.
     syncDownstreamRounds();
     saveActiveRun(active);
 
-    const dataUrl = buildBracketUpdateImage(active);
+    let bgImg = null;
+    try { bgImg = await loadImage("mkpark15.jpg"); } catch (e) { bgImg = null; }
+    const dataUrl = buildBracketUpdateImage(active, bgImg);
     openDialog({
       title: "Bracket update image",
       body: "Tap and hold to save, or use Download.",
@@ -863,7 +874,7 @@ function openBracketImageDialog() {
   }
 }
 
-function buildBracketUpdateImage(run) {
+function buildBracketUpdateImage(run, bgImg) {
   // Single, left-to-right 32-attraction bracket image
   const W = 1600;
   const H = 1600;
@@ -876,6 +887,17 @@ function buildBracketUpdateImage(run) {
   // Background
   ctx.fillStyle = "#ffffff";
   ctx.fillRect(0, 0, W, H);
+  if (bgImg) {
+    const iw = bgImg.naturalWidth || bgImg.width;
+    const ih = bgImg.naturalHeight || bgImg.height;
+    const scale = Math.max(W / iw, H / ih);
+    const sw = W / scale;
+    const sh = H / scale;
+    const sx = (iw - sw) / 2;
+    const sy = (ih - sh) / 2;
+    try { ctx.drawImage(bgImg, sx, sy, sw, sh, 0, 0, W, H); } catch (e) { /* ignore */ }
+    // Fade it heavily so it stays a background
+    }
 
   // Title
   ctx.fillStyle = "#111827";
