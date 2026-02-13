@@ -931,6 +931,56 @@ const yBase = Array.from({ length: teams }, (_, i) => {
   for (let i = 1; i < roundIds.length; i++) xCols.push(xCols[i - 1] + colTextW + connW + colGap);
   const xChamp = xCols[xCols.length - 1] + colTextW + connW + colGap;
 
+  // Stats box (top-right)
+  const totalMatchups = 31;
+  const matchupsDone = countDecisions(run);
+  const pointsTotal = computePointsTotal(run);
+
+  const lastDecisionISO = (() => {
+    const evs = Array.isArray(run?.events) ? run.events : [];
+    let best = null;
+    for (const e of evs) {
+      if (e && e.type === "match_decided" && typeof e.timeISO === "string") {
+        if (!best || e.timeISO > best) best = e.timeISO;
+      }
+    }
+    return best;
+  })();
+
+  const asOfDate = (matchupsDone >= totalMatchups && lastDecisionISO)
+    ? new Date(lastDecisionISO)
+    : new Date();
+
+  const asOfStr = asOfDate.toLocaleString("en-US", {
+    timeZone: "America/New_York",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+
+  // Box position: to the right of the bracket body, left of the CHAMP column
+  const statsW = 380;
+  const statsH = 140;
+  const statsX = Math.min(W - marginR - statsW, xChamp - 20 - statsW);
+  const statsY = 120;
+
+  ctx.save();
+  ctx.strokeStyle = "#999";
+  ctx.lineWidth = 2;
+  ctx.strokeRect(statsX, statsY, statsW, statsH);
+
+  ctx.fillStyle = "#111";
+  ctx.font = "20px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  ctx.textAlign = "left";
+  ctx.textBaseline = "top";
+
+  ctx.fillText(`As of ${asOfStr} ET`, statsX + 14, statsY + 14);
+  ctx.fillText(`${matchupsDone} of ${totalMatchups} matchups complete`, statsX + 14, statsY + 54);
+  ctx.fillText(`${pointsTotal} points`, statsX + 14, statsY + 94);
+  ctx.restore();
+
+
   // Typography
   const fontEntry = "700 24px system-ui, -apple-system, Segoe UI, Roboto, Arial";
   const fontLabel = "800 18px system-ui, -apple-system, Segoe UI, Roboto, Arial";
