@@ -885,8 +885,8 @@ function buildBracketUpdateImage(run) {
   ctx.fillText("ER March Magic Bracket Challenge", W / 2, 42);
 
   // Geometry
-  const marginTop = 90;
-  const marginBottom = 40;
+  const marginTop = 160;
+  const marginBottom = 80;
   const usableH = H - marginTop - marginBottom;
 
   // Keep text readable; tighten by using the available height efficiently
