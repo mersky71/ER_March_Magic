@@ -896,7 +896,7 @@ function buildBracketUpdateImage(run) {
   const r1Pitch = usableH / teamsPerSide;
 
   // Column widths — text blocks are narrow because we’re not using boxes.
-  const SCALE = 0.80; // shrink rounds 1–3 columns ~20%
+  const SCALE = 0.70; // shrink rounds 1–3 columns ~30%
   const colTextW = Math.round(210 * SCALE); // text start area (seed + short name)
   const connW = Math.round(38 * SCALE);     // connector horizontal run between rounds
   const colGap = Math.round(12 * SCALE);
@@ -988,13 +988,8 @@ function buildBracketUpdateImage(run) {
   const yR1 = Array.from({ length: teamsPerSide }, (_, i) => topY + r1Pitch * (i + 0.5));
   const yR2 = Array.from({ length: 8 }, (_, i) => (yR1[i*2] + yR1[i*2 + 1]) / 2);
   const yR3 = Array.from({ length: 4 }, (_, i) => (yR2[i*2] + yR2[i*2 + 1]) / 2);
-  // Final Four positioning:
-  // Place the left-side semifinal (R4[0]) in the *upper* half, roughly aligned with the
-  // 8 vs 9 seed area (Round 1 matchup #2), and the right-side semifinal (R4[1]) in the
-  // lower half. Using Round 2 midpoints keeps this layout tied to the same vertical
-  // rhythm as the earlier rounds.
-  const ySemiTop = yR2[1];
-  const ySemiBot = yR2[6];
+  const ySemiTop = top + usableH * 0.26;
+  const ySemiBot = top + usableH * 0.74;
   const yFinal = top + usableH * 0.50;
 
   // Draw left side: R1->R2->R3 with classic bracket connectors
@@ -1174,79 +1169,157 @@ function buildBracketUpdateImage(run) {
   drawSideLeft();
   drawSideRight();
 
-  // Semifinals (R4) and Final (R5)
-  const r4 = run.bracket.rounds.R4 || [];
-  const r5 = run.bracket.rounds.R5 || [];
 
-  // Left semi (R4[0]) at ySemiTop, right semi (R4[1]) at ySemiBot
-  function drawSemi(mm, x, y, side) {
-    const a = mm?.a || null;
-    const b = mm?.b || null;
-    const win = mm?.winner || null;
-    const pts = win ? winnerPoints("R4", mm) : 0;
+  // Final Four (R4) as two mini-brackets + Final (R5) in the center
+  const r4 = run.bracket.rounds?.R4 || [];
+  const r5 = (run.bracket.rounds?.R5 || [])[0] || null;
 
-    const dy = r1Pitch * 0.30;
-    drawEntry(x, y - dy, a, win === a, win === a ? pts : 0);
-    drawEntry(x, y + dy, b, win === b, win === b ? pts : 0);
+  // Source semifinalists from R3 winners (left side = first two, right side = last two)
+  const r3 = run.bracket.rounds?.R3 || [];
+  const s1 = r3[0]?.winner ? getRideById(r3[0].winner) : null; // left bracket
+  const s2 = r3[1]?.winner ? getRideById(r3[1].winner) : null; // left bracket
+  const s3 = r3[2]?.winner ? getRideById(r3[2].winner) : null; // right bracket
+  const s4 = r3[3]?.winner ? getRideById(r3[3].winner) : null; // right bracket
 
-    // Connector to final (toward center)
-    const xEnd = x + semiTextW;
-    const xJoin = side === "L" ? (xEnd + connW) : (x - connW);
-    const xLine = side === "L" ? xEnd : (x - colGap/2);
-    drawLine(xLine, y - dy, xJoin, y - dy);
-    drawLine(xLine, y + dy, xJoin, y + dy);
-    drawLine(xJoin, y - dy, xJoin, y + dy);
+  const f1 = r4[0]?.winner ? getRideById(r4[0].winner) : null; // finalist from left mini-bracket
+  const f2 = r4[1]?.winner ? getRideById(r4[1].winner) : null; // finalist from right mini-bracket
 
-    // go to final centerline
-    drawLine(xJoin, y, xFinal - (side === "L" ? colGap/2 : - (semiTextW + colGap/2)), y);
-  }
+  // Layout constants for the mini-brackets and final
+  const xCenter = W / 2;
+  const yTitle = 70;
 
-  // Labels for center
+  // Mini-brackets sit in the center area, NOT physically connected to the Round 3 brackets.
+  const miniW = 260;         // width from semi text start to the join point
+  const miniGapY = 56;       // vertical gap between the two semifinalist lines
+  const miniOutY = 92;       // distance from top semi to finalist line
+  const miniStem = 26;       // small connector stubs
+
+  const xMiniLeft = xCenter - 360;   // top mini-bracket (from LEFT side bracket)
+  const xMiniRight = xCenter + 120;  // bottom mini-bracket (from RIGHT side bracket)
+
+  const yMiniTop = 230;
+  const yMiniBot = H - 260;
+
+  // Final block in the center
+  const xFinalMid = xCenter - 70; // where the final two lines meet
+  const yFinalMid = (yMiniTop + yMiniBot) / 2;
+
+  // Final Four label
+  ctx.save();
+  ctx.font = "700 16px system-ui, -apple-system, Segoe UI, Roboto, Arial";
   ctx.textAlign = "center";
-  ctx.fillStyle = "rgba(17,24,39,.70)";
-  ctx.font = fontLabel;
-  ctx.fillText("Final Four", W/2, 96);
-  ctx.fillText("Final", W/2, yFinal - 70);
-  ctx.fillText("Champion", W/2, 74);
+  ctx.textBaseline = "alphabetic";
+  ctx.fillStyle = "#374151";
+  ctx.fillText("Final Four", xCenter, 78);
+  ctx.restore();
 
-  drawSemi(r4[0], xSemiL, ySemiTop, "L");
-  drawSemi(r4[1], xSemiR, ySemiBot, "R");
+  function drawMiniBracketLeft(x, yTop, aRide, bRide, outRide) {
+    // Two semis (a/b) feed into a join on the RIGHT, then U-turn back LEFT into the final.
+    const yA = yTop;
+    const yB = yTop + miniGapY;
+    const yOut = yTop + miniOutY;
 
-  // Final entries (R5[0])
-  const final = r5[0] || null;
-  if (final) {
-    const a = final.a || null;
-    const b = final.b || null;
-    const win = final.winner || null;
-    const pts = win ? winnerPoints("R5", final) : 0;
+    // Semi lines
+    const aTxt = aRide ? `${aRide.seed} ${aRide.shortName}` : "";
+    const bTxt = bRide ? `${bRide.seed} ${bRide.shortName}` : "";
+    ctx.fillStyle = "#111827";
+    ctx.font = "600 16px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    if (aTxt) ctx.fillText(aTxt, x, yA);
+    if (bTxt) ctx.fillText(bTxt, x, yB);
 
-    const dy = r1Pitch * 0.34;
-    // Final text width uses semiTextW for consistency
-    drawEntry(xFinal, yFinal - dy, a, win === a, win === a ? pts : 0);
-    drawEntry(xFinal, yFinal + dy, b, win === b, win === b ? pts : 0);
+    // Bracket connectors (join on right)
+    const xJoin = x + miniW;
+    // stubs from the semis
+    line(x + miniStem, yA, xJoin - 12, yA);
+    line(x + miniStem, yB, xJoin - 12, yB);
+    // vertical join
+    line(xJoin - 12, yA, xJoin - 12, yB);
+    // output to the right, then U-turn back left
+    line(xJoin - 12, (yA + yB) / 2, xJoin, (yA + yB) / 2);
+    line(xJoin, (yA + yB) / 2, xJoin, yOut);
+    line(xJoin, yOut, xFinalMid, yOut); // U-turn back toward center final
 
-    // Connector up to champion
-    const xEnd = xFinal + semiTextW;
-    const xJoin = xEnd + connW;
-    drawLine(xEnd, yFinal - dy, xJoin, yFinal - dy);
-    drawLine(xEnd, yFinal + dy, xJoin, yFinal + dy);
-    drawLine(xJoin, yFinal - dy, xJoin, yFinal + dy);
-
-    const champY = 42;
-    drawLine(xJoin, yFinal, xJoin, champY + 24);
-    drawLine(xJoin, champY + 24, xChamp - colGap/2, champY + 24);
-
-    // Champion text (top center, on a line)
-    const champ = final.winner || null;
-    if (champ) {
-      ctx.fillStyle = "#111827";
-      ctx.font = "900 26px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+    // Finalist label sitting on the return line
+    const outTxt = outRide ? `${outRide.seed} ${outRide.shortName}` : "";
+    if (outTxt) {
       ctx.textAlign = "left";
-      ctx.fillText(labelFor(champ), xChamp, champY + 24);
+      ctx.fillText(outTxt, xFinalMid + 6, yOut);
     }
-  } else {
-    // Still show an empty champion header space for consistency
+    return { xIn: xFinalMid, yIn: yOut };
   }
+
+  function drawMiniBracketRight(x, yTop, aRide, bRide, outRide) {
+    // Two semis (a/b) feed into a join on the LEFT, then U-turn back RIGHT into the final.
+    const yA = yTop;
+    const yB = yTop + miniGapY;
+    const yOut = yTop - 18; // finalist comes UP from this mini-bracket
+
+    const aTxt = aRide ? `${aRide.seed} ${aRide.shortName}` : "";
+    const bTxt = bRide ? `${bRide.seed} ${bRide.shortName}` : "";
+    ctx.fillStyle = "#111827";
+    ctx.font = "600 16px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    if (aTxt) ctx.fillText(aTxt, x, yA);
+    if (bTxt) ctx.fillText(bTxt, x, yB);
+
+    const xJoin = x - 26;
+    // stubs from semis to join
+    line(xJoin + 12, yA, x + miniStem, yA);
+    line(xJoin + 12, yB, x + miniStem, yB);
+    // vertical join
+    line(xJoin + 12, yA, xJoin + 12, yB);
+    // output left, then U-turn up, then back right toward center final
+    line(xJoin, (yA + yB) / 2, xJoin + 12, (yA + yB) / 2);
+    line(xJoin, (yA + yB) / 2, xJoin, yOut);
+    line(xJoin, yOut, xFinalMid + 190, yOut); // return line toward center (from right)
+
+    const outTxt = outRide ? `${outRide.seed} ${outRide.shortName}` : "";
+    if (outTxt) {
+      ctx.textAlign = "left";
+      ctx.fillText(outTxt, xFinalMid + 196, yOut);
+    }
+    return { xIn: xFinalMid + 190, yIn: yOut };
+  }
+
+  // Draw mini-brackets
+  const topIn = drawMiniBracketLeft(xMiniLeft, yMiniTop, s1, s2, f1);
+  const botIn = drawMiniBracketRight(xMiniRight, yMiniBot, s3, s4, f2);
+
+  // Draw final (F1 vs F2) in the center, connecting the two U-turns
+  if (r5) {
+    const winnerId = r5.winner || null;
+
+    // Connect the two finalist lines into a central join, then to champion
+    const yTopFinal = topIn.yIn;
+    const yBotFinal = botIn.yIn;
+    const yJoin = (yTopFinal + yBotFinal) / 2;
+
+    // vertical join
+    line(xFinalMid, yTopFinal, xFinalMid, yBotFinal);
+    // small connector to champion line
+    line(xFinalMid, yJoin, xFinalMid + 90, yJoin);
+
+    // Champion label sits on the champion line
+    const champRide = winnerId ? getRideById(winnerId) : null;
+    const champTxt = champRide ? `${champRide.seed} ${champRide.shortName}` : "";
+    ctx.fillStyle = "#111827";
+    ctx.font = "700 18px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    if (champTxt) ctx.fillText(champTxt, xFinalMid + 98, yJoin);
+  } else {
+    // Still draw the center join even if final isn't populated yet
+    const yTopFinal = topIn.yIn;
+    const yBotFinal = botIn.yIn;
+    const yJoin = (yTopFinal + yBotFinal) / 2;
+    line(xFinalMid, yTopFinal, xFinalMid, yBotFinal);
+    line(xFinalMid, yJoin, xFinalMid + 90, yJoin);
+  }
+
+  // (Round headings for R1/R2/R3 are handled above; keep the champion header space for consistency)
 
   return canvas.toDataURL("image/png");
 }
