@@ -96,7 +96,8 @@ function setupMoreMenu() {
 
   shareUpdateMenuBtn.addEventListener("click", () => {
     closeMore();
-    showToast("Update image is coming next (after bracket rendering is stable).");
+    if (!active) return;
+    openBracketImageDialog();
   });
 
   settingsMenuBtn.addEventListener("click", () => {
@@ -823,6 +824,334 @@ function openSettingsDialog() {
       { text: "Cancel", className: "btn", action: () => closeDialog() }
     ]
   });
+}
+
+function openBracketImageDialog() {
+  try {
+    // Make sure downstream rounds are synced so later-round slots populate when ready.
+    syncDownstreamRounds();
+    saveActiveRun(active);
+
+    const dataUrl = buildBracketUpdateImage(active);
+    openDialog({
+      title: "Bracket update image",
+      body: "Tap and hold to save, or use Download.",
+      content: `
+        <div style="display:flex; justify-content:center;">
+          <img src="${dataUrl}" alt="Bracket update image" style="max-width:100%; border-radius:16px; border:1px solid rgba(0,0,0,.15);" />
+        </div>
+      `,
+      buttons: [
+        {
+          text: "Download PNG",
+          className: "btn btnPrimary",
+          action: () => {
+            const a = document.createElement("a");
+            a.href = dataUrl;
+            a.download = `ER_March_Magic_bracket_${active?.startedAt || "update"}.png`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+          }
+        },
+        { text: "Close", className: "btn", action: () => closeDialog() }
+      ]
+    });
+  } catch (e) {
+    console.error(e);
+    showToast("Could not build bracket image.");
+  }
+}
+
+function buildBracketUpdateImage(run) {
+  const W = 1200;
+  const H = 1500;
+  const canvas = document.createElement("canvas");
+  canvas.width = W;
+  canvas.height = H;
+  const ctx = canvas.getContext("2d");
+
+  // Background
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, W, H);
+
+  // Title
+  ctx.fillStyle = "#111827";
+  ctx.font = "900 34px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText("ER March Magic Bracket Challenge", W / 2, 46);
+
+  // Layout params
+  const top = 110;
+  const bottom = 60;
+  const usableH = H - top - bottom;
+  const teamsPerSide = 16;
+  const pitch = usableH / teamsPerSide;
+
+  const colW = 230;
+  const gap = 32;
+
+  const xL1 = 40;
+  const xL2 = xL1 + colW + gap;
+  const xL3 = xL2 + colW + gap;
+
+  const xR1 = W - 40 - colW;
+  const xR2 = xR1 - gap - colW;
+  const xR3 = xR2 - gap - colW;
+
+  const xC = W / 2;
+
+  // Center columns (Final Four, Final, Champion)
+  const centerColW = 260;
+  const xSemiL = xC - centerColW - 40;
+  const xSemiR = xC + 40;
+  const xFinal = xC - centerColW / 2;
+  const champW = 420;
+  const champH = 72;
+
+  // Text styles
+  const fontTeam = "700 18px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  const fontTeamSmall = "600 16px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+
+  // Helpers
+  function seedOf(id) {
+    const r = ridesById.get(id);
+    return r?.seed || "";
+  }
+  function labelFor(id) {
+    if (!id) return "";
+    const s = shortNameFor(id);
+    const seed = seedOf(id);
+    return `${seed} ${s}`.trim();
+  }
+  function pointsWinner(roundId, match) {
+    try { return pointsForWinnerFromMatch(roundId, match) || 0; } catch { return 0; }
+  }
+  function drawSlot(x, y, text, isWinner, pts) {
+    const padX = 10;
+    const h = 34;
+    const w = colW;
+    const r = 10;
+    const yy = y - h / 2;
+
+    // Box
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = "rgba(17,24,39,.18)";
+    ctx.fillStyle = "#ffffff";
+    roundRect(ctx, x, yy, w, h, r, true, true);
+
+    // Text
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    ctx.font = fontTeam;
+    ctx.fillStyle = "#111827";
+    if (!text) ctx.fillStyle = "rgba(17,24,39,.20)";
+    if (text) ctx.fillText(text, x + padX, y);
+
+    // Points (winner only)
+    if (isWinner && pts) {
+      const ptxt = `${pts} pts`;
+      ctx.textAlign = "right";
+      ctx.font = fontTeamSmall;
+      ctx.fillStyle = "#111827";
+      ctx.fillText(ptxt, x + w - padX, y);
+    }
+  }
+
+  function roundRect(ctx, x, y, w, h, r, fill, stroke) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+    if (fill) ctx.fill();
+    if (stroke) ctx.stroke();
+  }
+
+  function childCenters(centers, groupSize) {
+    // centers length = teamsPerSide / groupSize
+    const out = [];
+    for (let i = 0; i < centers.length; i += 2) {
+      out.push((centers[i] + centers[i + 1]) / 2);
+    }
+    return out;
+  }
+
+  // Y centers for round 1 team slots (16 per side)
+  const r1TeamY = Array.from({ length: teamsPerSide }, (_, i) => top + pitch * (i + 0.5));
+  const r2MatchY = childCenters(r1TeamY, 2);     // 8
+  const r3MatchY = childCenters(r2MatchY, 4);    // 4
+  const r4MatchY = childCenters(r3MatchY, 8);    // 2  (semi per side)
+  const r5MatchY = [ (r4MatchY[0] + r4MatchY[1]) / 2 ]; // 1 final centerline per side (but overall final uses left semi winner vs right semi winner)
+
+  // Draw round labels
+  ctx.font = "800 18px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  ctx.fillStyle = "rgba(17,24,39,.65)";
+  ctx.textAlign = "center";
+  ctx.fillText("Round 1", xL1 + colW/2, 86);
+  ctx.fillText("Round 2", xL2 + colW/2, 86);
+  ctx.fillText("Round 3", xL3 + colW/2, 86);
+  ctx.fillText("Round 1", xR1 + colW/2, 86);
+  ctx.fillText("Round 2", xR2 + colW/2, 86);
+  ctx.fillText("Round 3", xR3 + colW/2, 86);
+  ctx.fillText("Final Four", xC, 86);
+
+  // Helper to draw a round side
+  function drawSide(sideIndex) {
+    // sideIndex 0 = left (matchups 0-7), 1 = right (matchups 8-15)
+    const r1 = run.bracket.rounds.R1 || [];
+    const base = sideIndex === 0 ? 0 : 8;
+
+    // Round 1 (16 slots)
+    for (let m = 0; m < 8; m++) {
+      const mm = r1[base + m];
+      const a = mm?.a || null;
+      const b = mm?.b || null;
+      const win = mm?.winner || null;
+      const pts = (mm?.winner) ? pointsWinner("R1", mm) : 0;
+
+      const slotA = labelFor(a);
+      const slotB = labelFor(b);
+
+      const yA = r1TeamY[m*2];
+      const yB = r1TeamY[m*2 + 1];
+
+      drawSlot(sideIndex===0 ? xL1 : xR1, yA, slotA, win===a, win===a ? pts : 0);
+      drawSlot(sideIndex===0 ? xL1 : xR1, yB, slotB, win===b, win===b ? pts : 0);
+    }
+
+    // Round 2 (8 matches per side -> draw winner slots only, centered)
+    const r2 = run.bracket.rounds.R2 || [];
+    const r2base = sideIndex===0 ? 0 : 4;
+    for (let i = 0; i < 4; i++) {
+      const mm = r2[r2base + i];
+      const a = mm?.a || null;
+      const b = mm?.b || null;
+      const win = mm?.winner || null;
+      const pts = win ? pointsWinner("R2", mm) : 0;
+      const y = r2MatchY[i*2]; // centers align roughly (we use every other because r2MatchY length 8)
+      // Draw both participants? We'll draw just the two entries as a/b at slightly offset for clarity
+      // Use small offsets around center
+      const dy = pitch * 0.25;
+      drawSlot(sideIndex===0 ? xL2 : xR2, y - dy, labelFor(a), win===a, win===a ? pts : 0);
+      drawSlot(sideIndex===0 ? xL2 : xR2, y + dy, labelFor(b), win===b, win===b ? pts : 0);
+    }
+
+    // Round 3 (2 matches per side)
+    const r3 = run.bracket.rounds.R3 || [];
+    const r3base = sideIndex===0 ? 0 : 2;
+    for (let i = 0; i < 2; i++) {
+      const mm = r3[r3base + i];
+      const a = mm?.a || null;
+      const b = mm?.b || null;
+      const win = mm?.winner || null;
+      const pts = win ? pointsWinner("R3", mm) : 0;
+      const y = r3MatchY[i*2]; 
+      const dy = pitch * 0.5;
+      drawSlot(sideIndex===0 ? xL3 : xR3, y - dy, labelFor(a), win===a, win===a ? pts : 0);
+      drawSlot(sideIndex===0 ? xL3 : xR3, y + dy, labelFor(b), win===b, win===b ? pts : 0);
+    }
+  }
+
+  drawSide(0);
+  drawSide(1);
+
+  // Final Four (R4): two semis, left winner vs right winner in Final (R5)
+  const r4 = run.bracket.rounds.R4 || [];
+  const semiLeft = r4[0] || null;
+  const semiLeft2 = r4[1] || null;
+
+  // Because syncDownstreamRounds builds R4 as two matches: winner of left side and winner of right side
+  // R4[0] corresponds to winners of R3[0] & R3[1] (left side)
+  // R4[1] corresponds to winners of R3[2] & R3[3] (right side)
+
+  const semiYs = [ top + usableH * 0.33, top + usableH * 0.67 ];
+
+  function drawSemi(mm, x, y, idx) {
+    const a = mm?.a || null;
+    const b = mm?.b || null;
+    const win = mm?.winner || null;
+    const pts = win ? pointsWinner("R4", mm) : 0;
+    const dy = 28;
+    drawSlot(x, y - dy, labelFor(a), win===a, win===a ? pts : 0);
+    drawSlot(x, y + dy, labelFor(b), win===b, win===b ? pts : 0);
+  }
+
+  // Left semi positioned left of center, right semi right of center
+  drawSemi(r4[0], xSemiL, semiYs[0], 0);
+  drawSemi(r4[1], xSemiR, semiYs[1], 1);
+
+  // Final (R5)
+  const r5 = run.bracket.rounds.R5 || [];
+  const final = r5[0] || null;
+  ctx.fillStyle = "rgba(17,24,39,.65)";
+  ctx.font = "800 18px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  ctx.textAlign = "center";
+  ctx.fillText("Final", xC, top + usableH * 0.50 - 92);
+
+  const finalY = top + usableH * 0.50;
+  if (final) {
+    const a = final.a || null;
+    const b = final.b || null;
+    const win = final.winner || null;
+    const pts = win ? pointsWinner("R5", final) : 0;
+    const dy = 32;
+    // Use center column width
+    const oldColW = colW;
+    // temporarily adjust drawSlot width by drawing custom
+    function drawFinalSlot(y, text, isWinner, pts) {
+      const padX = 10;
+      const h = 38;
+      const w = centerColW;
+      const r = 12;
+      const yy = y - h / 2;
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = "rgba(17,24,39,.18)";
+      ctx.fillStyle = "#ffffff";
+      roundRect(ctx, xFinal, yy, w, h, r, true, true);
+
+      ctx.textAlign = "left";
+      ctx.textBaseline = "middle";
+      ctx.font = "700 18px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+      ctx.fillStyle = "#111827";
+      if (text) ctx.fillText(text, xFinal + padX, y);
+
+      if (isWinner && pts) {
+        ctx.textAlign = "right";
+        ctx.font = "600 16px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+        ctx.fillText(`${pts} pts`, xFinal + w - padX, y);
+      }
+    }
+    drawFinalSlot(finalY - dy, labelFor(a), win===a, win===a ? pts : 0);
+    drawFinalSlot(finalY + dy, labelFor(b), win===b, win===b ? pts : 0);
+  } else {
+    // empty final slots
+  }
+
+  // Champion box (top center)
+  const champ = final?.winner || null;
+  ctx.font = "800 18px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  ctx.fillStyle = "rgba(17,24,39,.65)";
+  ctx.textAlign = "center";
+  ctx.fillText("Champion", xC, 88);
+
+  const champX = xC - champW/2;
+  const champY = 10;
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = "rgba(17,24,39,.25)";
+  ctx.fillStyle = "#ffffff";
+  roundRect(ctx, champX, champY, champW, champH, 16, true, true);
+
+  ctx.fillStyle = "#111827";
+  ctx.font = "900 26px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(champ ? labelFor(champ) : "", xC, champY + champH/2);
+
+  return canvas.toDataURL("image/png");
 }
 
 function openHistoryDialog() {
