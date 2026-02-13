@@ -896,9 +896,9 @@ function buildBracketUpdateImage(run) {
   const r1Pitch = usableH / teamsPerSide;
 
   // Column widths — text blocks are narrow because we’re not using boxes.
-  const colTextW = 240; // text start area (seed + short name)
-  const connW = 58;     // connector horizontal run between rounds
-  const colGap = 20;
+  const colTextW = 200; // text start area (seed + short name)
+  const connW = 40;     // connector horizontal run between rounds
+  const colGap = 12;
 
   // Left side columns (Round 1, Round 2, Round 3)
   const xL1 = marginX;
@@ -911,8 +911,8 @@ function buildBracketUpdateImage(run) {
   const xR3 = xR2 - (connW + colTextW + colGap);      // Round 3 text
 
   // Center block
-  const centerGap = 26;
-  const semiTextW = 280;
+  const centerGap = 16;
+  const semiTextW = 240;
   const xSemiL = xL3 + colTextW + connW + centerGap;  // left semi text
   const xSemiR = xR3 - (centerGap + semiTextW);       // right semi text
 
