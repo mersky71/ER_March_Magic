@@ -896,8 +896,8 @@ function buildBracketUpdateImage(run) {
   const r1Pitch = usableH / teamsPerSide;
 
   // Column widths — text blocks are narrow because we’re not using boxes.
-  const colTextW = 200; // text start area (seed + short name)
-  const connW = 40;     // connector horizontal run between rounds
+  const colTextW = 210; // text start area (seed + short name)
+  const connW = 38;     // connector horizontal run between rounds
   const colGap = 12;
 
   // Left side columns (Round 1, Round 2, Round 3)
@@ -911,8 +911,8 @@ function buildBracketUpdateImage(run) {
   const xR3 = xR2 - (connW + colTextW + colGap);      // Round 3 text
 
   // Center block
-  const centerGap = 16;
-  const semiTextW = 240;
+  const centerGap = 18;
+  const semiTextW = 260;
   const xSemiL = xL3 + colTextW + connW + centerGap;  // left semi text
   const xSemiR = xR3 - (centerGap + semiTextW);       // right semi text
 
@@ -1011,16 +1011,19 @@ function buildBracketUpdateImage(run) {
       drawEntry(xText, yA, a, win === a, win === a ? pts : 0);
       drawEntry(xText, yB, b, win === b, win === b ? pts : 0);
 
-      // Connectors to Round 2
-      const xEnd = xL1 + colTextW;
-      const xJoin = xEnd + connW;
-      drawLine(xEnd, yA, xJoin, yA);
-      drawLine(xEnd, yB, xJoin, yB);
-      drawLine(xJoin, yA, xJoin, yB);
+      // Connectors to Round 2 (fully connected blank-bracket style)
+      const linePad = 8;
+      const joinX = xL1 + colTextW + connW;      // vertical join for this matchup
+      const nameStartX = xL1 - linePad;          // draw line under the name
+      const nextNameStartX = xL2 - linePad;
 
-      // Horizontal into R2 center
+      drawLine(nameStartX, yA, joinX, yA);
+      drawLine(nameStartX, yB, joinX, yB);
+      drawLine(joinX, yA, joinX, yB);
+
+      // Outgoing to the next round's name line start
       const yMid = (yA + yB) / 2;
-      drawLine(xJoin, yMid, xL2 - colGap/2, yMid);
+      drawLine(joinX, yMid, nextNameStartX, yMid);
     }
 
     // Round 2: matchups 0..3 (left side)
@@ -1038,13 +1041,16 @@ function buildBracketUpdateImage(run) {
       drawEntry(xL2, yA, a, win === a, win === a ? pts : 0);
       drawEntry(xL2, yB, b, win === b, win === b ? pts : 0);
 
-      // Connectors to R3
-      const xEnd = xL2 + colTextW;
-      const xJoin = xEnd + connW;
-      drawLine(xEnd, yA, xJoin, yA);
-      drawLine(xEnd, yB, xJoin, yB);
-      drawLine(xJoin, yA, xJoin, yB);
-      drawLine(xJoin, yMid, xL3 - colGap/2, yMid);
+      // Connectors to R3 (fully connected)
+      const linePad = 8;
+      const joinX = xL2 + colTextW + connW;
+      const nameStartX = xL2 - linePad;
+      const nextNameStartX = xL3 - linePad;
+
+      drawLine(nameStartX, yA, joinX, yA);
+      drawLine(nameStartX, yB, joinX, yB);
+      drawLine(joinX, yA, joinX, yB);
+      drawLine(joinX, yMid, nextNameStartX, yMid);
     }
 
     // Round 3: matchups 0..1 (left side)
@@ -1062,13 +1068,16 @@ function buildBracketUpdateImage(run) {
       drawEntry(xL3, yA, a, win === a, win === a ? pts : 0);
       drawEntry(xL3, yB, b, win === b, win === b ? pts : 0);
 
-      // Connector to left semifinal
-      const xEnd = xL3 + colTextW;
-      const xJoin = xEnd + connW;
-      drawLine(xEnd, yA, xJoin, yA);
-      drawLine(xEnd, yB, xJoin, yB);
-      drawLine(xJoin, yA, xJoin, yB);
-      drawLine(xJoin, yMid, xSemiL - colGap/2, yMid);
+      // Connector to left semifinal (fully connected)
+      const linePad = 8;
+      const joinX = xL3 + colTextW + connW;
+      const nameStartX = xL3 - linePad;
+      const nextNameStartX = xSemiL - linePad;
+
+      drawLine(nameStartX, yA, joinX, yA);
+      drawLine(nameStartX, yB, joinX, yB);
+      drawLine(joinX, yA, joinX, yB);
+      drawLine(joinX, yMid, nextNameStartX, yMid);
     }
   }
 
