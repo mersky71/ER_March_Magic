@@ -921,7 +921,7 @@ const yBase = Array.from({ length: teams }, (_, i) => {
 
   // Column widths (compact; leaves room for a champion column)
   const x0 = 70;
-  const colTextW = 240; // tighter columns
+  const colTextW = 200; // tighter columns
   const connW = 25;
   const colGap = 15;
   const linePad = 10;
