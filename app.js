@@ -887,6 +887,7 @@ function buildBracketUpdateImage(run) {
   // Geometry
   const marginTop = 160;
   const marginBottom = 80;
+  const marginR = 70;
   const usableH = H - marginTop - marginBottom;
 
   // Keep text readable; tighten by using the available height efficiently
