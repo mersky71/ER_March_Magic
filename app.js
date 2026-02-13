@@ -864,9 +864,8 @@ function openBracketImageDialog() {
 }
 
 function buildBracketUpdateImage(run) {
-  // Landscape bracket image (text-on-lines) with 7 name columns:
-  // R1, R2, R3, Final Four (center semis), R3, R2, R1. Finals + Champion in center continuation.
-  const W = 2000;
+  // Landscape bracket image (designed for readability + shareability)
+  const W = 1800;
   const H = 1100;
 
   const canvas = document.createElement("canvas");
@@ -878,73 +877,99 @@ function buildBracketUpdateImage(run) {
   ctx.fillStyle = "#ffffff";
   ctx.fillRect(0, 0, W, H);
 
-  // Typography
-  const title = "ER March Magic Bracket Challenge";
+  // Title
   ctx.fillStyle = "#111827";
-  ctx.font = "700 34px system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial";
+  ctx.font = "900 34px system-ui, -apple-system, Segoe UI, Roboto, Arial";
   ctx.textAlign = "center";
-  ctx.textBaseline = "alphabetic";
-  ctx.fillText(title, W / 2, 48);
+  ctx.textBaseline = "middle";
+  ctx.fillText("ER March Magic Bracket Challenge", W / 2, 40);
 
-  // Bracket layout constants
-  const topY = 140;
-  const bottomY = H - 90;
+  // Column geometry (Option A: symmetric left/right + center finals)
+  const marginX = 36;
+  const topY = 95;
+  const bottomY = 40;
 
-  // Use a tight, deterministic coordinate system
-  const leftMargin = 70;
-  const rightMargin = 70;
+  const usableH = H - topY - bottomY;
 
-  const nameLineW = 250;     // horizontal segment names sit on
-  const joinGap = 34;        // small gap between nameLine and join vertical
-  const colGap = 95;         // gap between column join points (tighten left/right)
-  const stroke = 2;
+  // We draw 16 "team lines" per side in Round 1 (closer together than pills)
+  const teamsPerSide = 16;
+  const r1Pitch = usableH / teamsPerSide;
 
-  // Column x positions (left to right)
-  // We'll place join points for each column; name lines start a bit before that.
-  // Left half:
-  const xR1L = leftMargin + nameLineW + joinGap;                 // join point for R1
-  const xR2L = xR1L + colGap + nameLineW;                        // join point for R2
-  const xR3L = xR2L + colGap + nameLineW;                        // join point for R3
+  // Column widths — text blocks are narrow because we’re not using boxes.
+  const colTextW = 240; // text start area (seed + short name)
+  const connW = 58;     // connector horizontal run between rounds
+  const colGap = 20;
 
-  // Center band
-  const centerBandLeft = xR3L + colGap + 40;
-  const centerBandRight = W - (rightMargin + nameLineW + joinGap + colGap + nameLineW + colGap + nameLineW);
+  // Left side columns (Round 1, Round 2, Round 3)
+  const xL1 = marginX;
+  const xL2 = xL1 + colTextW + connW + colGap;
+  const xL3 = xL2 + colTextW + connW + colGap;
 
-  const xFF = Math.floor((centerBandLeft + centerBandRight) / 2);         // join point for Final Four column
-  const xFinal = xFF + 210;                                               // join point for Final line
-  const xChamp = xFinal + 190;                                            // end point for Champion line
+  // Right side columns (mirrored, Round 3, Round 2, Round 1)
+  const xR1 = W - marginX - colTextW;                 // Round 1 text on far right
+  const xR2 = xR1 - (connW + colTextW + colGap);      // Round 2 text
+  const xR3 = xR2 - (connW + colTextW + colGap);      // Round 3 text
 
-  // Right half (mirror join points)
-  const xR1R = W - (leftMargin + nameLineW + joinGap);            // join point for R1 right
-  const xR2R = xR1R - (colGap + nameLineW);
-  const xR3R = xR2R - (colGap + nameLineW);
+  // Center block
+  const centerGap = 26;
+  const semiTextW = 280;
+  const xSemiL = xL3 + colTextW + connW + centerGap;  // left semi text
+  const xSemiR = xR3 - (centerGap + semiTextW);       // right semi text
 
-  // Round labels (7 columns)
-  ctx.fillStyle = "#6b7280";
-  ctx.font = "600 18px system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial";
+  const xFinal = (W / 2) - (semiTextW / 2);
+  const xChamp = xFinal;
+
+  // Helpers (data)
+  function seedOf(id) {
+    const r = ridesById.get(id);
+    return r?.seed || "";
+  }
+  function labelFor(id) {
+    if (!id) return "";
+    const s = shortNameFor(id);
+    const seed = seedOf(id);
+    return `${seed} ${s}`.trim();
+  }
+  function winnerPoints(roundId, match) {
+    try { return pointsForWinnerFromMatch(roundId, match) || 0; } catch { return 0; }
+  }
+
+  // Typography
+  const fontBase = "700 18px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  const fontSmall = "700 16px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  const fontLabel = "800 18px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+
+  ctx.textAlign = "left";
+  ctx.textBaseline = "middle";
+
+  // Round labels
+  ctx.fillStyle = "rgba(17,24,39,.70)";
+  ctx.font = fontLabel;
   ctx.textAlign = "center";
-  ctx.fillText("Round 1", xR1L - (nameLineW / 2 + joinGap), 95);
-  ctx.fillText("Round 2", xR2L - (nameLineW / 2 + joinGap), 95);
-  ctx.fillText("Round 3", xR3L - (nameLineW / 2 + joinGap), 95);
-  ctx.fillText("Final Four", xFF - 70, 95);
-  ctx.fillText("Round 3", xR3R + (nameLineW / 2 + joinGap), 95);
-  ctx.fillText("Round 2", xR2R + (nameLineW / 2 + joinGap), 95);
-  ctx.fillText("Round 1", xR1R + (nameLineW / 2 + joinGap), 95);
+  ctx.fillText("Round 1", xL1 + colTextW/2, 78);
+  ctx.fillText("Round 2", xL2 + colTextW/2, 78);
+  ctx.fillText("Round 3", xL3 + colTextW/2, 78);
 
-  // Finals / Champion labels
-  ctx.fillText("Final", xFinal - 70, Math.floor((topY + bottomY) / 2) - 8);
-  ctx.fillText("Champion", xChamp - 85, 95);
+  ctx.fillText("Round 3", xR3 + colTextW/2, 78);
+  ctx.fillText("Round 2", xR2 + colTextW/2, 78);
+  ctx.fillText("Round 1", xR1 + colTextW/2, 78);
 
-  // Helpers
-  function drawTextOnLine(text, x, y, align) {
-    if (!text) return;
-    ctx.save();
-    ctx.font = "600 20px system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial";
-    ctx.fillStyle = "#111827";
-    ctx.textAlign = align || "left";
-    ctx.textBaseline = "middle";
+  ctx.fillText("Final Four", W/2, 78);
+
+  // Drawing primitives
+  function drawEntry(x, y, id, isWinner, pts) {
+    if (!id) return;
+    const name = labelFor(id);
+    // Winner emphasis is subtle: darker + bold; no color coding
+    ctx.fillStyle = isWinner ? "#111827" : "rgba(17,24,39,.78)";
+    ctx.font = isWinner ? fontBase : fontBase;
+
+    // Compose with points in parentheses right after name, only for winner
+    let text = name;
+    if (isWinner && pts) text = `${name} (${pts})`;
+
+    ctx.textAlign = "left";
     ctx.fillText(text, x, y);
-    ctx.restore();
   }
 
   function drawLine(x1, y1, x2, y2) {
@@ -953,306 +978,258 @@ function buildBracketUpdateImage(run) {
     ctx.lineTo(x2, y2);
     ctx.stroke();
   }
-  function getRideById(id) {
-    return ridesById.get(id);
-  }
 
-  function entryText(entryId, winnerId, winnerPoints) {
-entryId, winnerId, winnerPoints) {
-    if (!entryId) return "";
-    const ride = getRideById(entryId);
-    if (!ride) return "";
-    const seed = (ride.seed != null ? String(ride.seed) : "");
-    const name = ride.shortName || ride.id || "";
-    const isWinner = (winnerId && entryId === winnerId);
-    const pts = (isWinner && winnerPoints != null) ? ` (${winnerPoints})` : "";
-    return `${seed} ${name}${pts}`.trim();
-  }
+  // Connector styling
+  ctx.strokeStyle = "rgba(17,24,39,.22)";
+  ctx.lineWidth = 2;
 
-  // Determine points for a given matchup's winner (per round multiplier already in app logic)
-  function winnerPointsForMatch(roundNum, winnerId) {
-    if (!winnerId) return null;
-    const roundId = "R" + String(roundNum);
-    const roundMeta = ROUNDS.find(r => r.id === roundId) || ROUNDS[0];
-    const ride = ridesById.get(winnerId);
-    return pointsForRideInRound(ride, roundMeta);
-  }
+  // Y centers for Round 1 entries (16 per side)
+  const yR1 = Array.from({ length: teamsPerSide }, (_, i) => topY + r1Pitch * (i + 0.5));
+  const yR2 = Array.from({ length: 8 }, (_, i) => (yR1[i*2] + yR1[i*2 + 1]) / 2);
+  const yR3 = Array.from({ length: 4 }, (_, i) => (yR2[i*2] + yR2[i*2 + 1]) / 2);
+  const ySemi = Array.from({ length: 2 }, (_, i) => (yR3[i*2] + yR3[i*2 + 1]) / 2);
+  const yFinal = (ySemi[0] + ySemi[1]) / 2;
 
-  // Y coordinates (tight but readable)
-  const r1CountPerSide = 16;
-  const r1Gap = (bottomY - topY) / (r1CountPerSide - 1);
+  // Draw left side: R1->R2->R3 with classic bracket connectors
+  function drawSideLeft() {
+    const r1 = run.bracket.rounds.R1 || [];
+    const r2 = run.bracket.rounds.R2 || [];
+    const r3 = run.bracket.rounds.R3 || [];
 
-  const yR1 = Array.from({ length: r1CountPerSide }, (_, i) => Math.round(topY + i * r1Gap));
-  const yR2 = Array.from({ length: 8 }, (_, i) => Math.round((yR1[i * 2] + yR1[i * 2 + 1]) / 2));
-  const yR3 = Array.from({ length: 4 }, (_, i) => Math.round((yR2[i * 2] + yR2[i * 2 + 1]) / 2));
-  const ySemi = Array.from({ length: 2 }, (_, i) => Math.round((yR3[i * 2] + yR3[i * 2 + 1]) / 2));
-  const yFinal = Math.round((ySemi[0] + ySemi[1]) / 2);
-  const yChamp = 115;
+    // Round 1: matchups 0..7 (16 entries)
+    for (let m = 0; m < 8; m++) {
+      const mm = r1[m];
+      const a = mm?.a || null;
+      const b = mm?.b || null;
+      const win = mm?.winner || null;
+      const pts = win ? winnerPoints("R1", mm) : 0;
 
-  // Stroke style
-  ctx.strokeStyle = "#c7cdd6";
-  ctx.lineWidth = stroke;
+      const yA = yR1[m*2];
+      const yB = yR1[m*2 + 1];
+      const xText = xL1;
 
-  // Bracket drawing primitives (blank bracket first, then names)
-  function drawMatchColumnLeft(roundJoinX, parentYs, matchYs) {
-    // For each match, draw two incoming name lines ending at joinX-joinGap, join vertical at joinX.
-    for (let m = 0; m < matchYs.length; m++) {
-      const yTop = parentYs[m * 2];
-      const yBot = parentYs[m * 2 + 1];
-      const yMid = matchYs[m];
+      drawEntry(xText, yA, a, win === a, win === a ? pts : 0);
+      drawEntry(xText, yB, b, win === b, win === b ? pts : 0);
 
-      const nameEndX = roundJoinX - joinGap;
-      const nameStartX = nameEndX - nameLineW;
+      // Connectors to Round 2
+      const xEnd = xL1 + colTextW;
+      const xJoin = xEnd + connW;
+      drawLine(xEnd, yA, xJoin, yA);
+      drawLine(xEnd, yB, xJoin, yB);
+      drawLine(xJoin, yA, xJoin, yB);
 
-      // Incoming name lines
-      drawLine(nameStartX, yTop, nameEndX, yTop);
-      drawLine(nameStartX, yBot, nameEndX, yBot);
+      // Horizontal into R2 center
+      const yMid = (yA + yB) / 2;
+      drawLine(xJoin, yMid, xL2 - colGap/2, yMid);
+    }
 
-      // Connector to join
-      drawLine(nameEndX, yTop, roundJoinX, yTop);
-      drawLine(nameEndX, yBot, roundJoinX, yBot);
+    // Round 2: matchups 0..3 (left side)
+    for (let m = 0; m < 4; m++) {
+      const mm = r2[m];
+      const a = mm?.a || null;
+      const b = mm?.b || null;
+      const win = mm?.winner || null;
+      const pts = win ? winnerPoints("R2", mm) : 0;
 
-      // Vertical join
-      drawLine(roundJoinX, yTop, roundJoinX, yBot);
+      const yA = yR2[m*2];
+      const yB = yR2[m*2 + 1];
+      const yMid = (yA + yB) / 2;
 
-      // Outgoing to next round (to the right) will be drawn by next-round function,
-      // but we draw a short stub from join to the midpoint for continuity.
-      drawLine(roundJoinX, yMid, roundJoinX + 14, yMid);
+      drawEntry(xL2, yA, a, win === a, win === a ? pts : 0);
+      drawEntry(xL2, yB, b, win === b, win === b ? pts : 0);
+
+      // Connectors to R3
+      const xEnd = xL2 + colTextW;
+      const xJoin = xEnd + connW;
+      drawLine(xEnd, yA, xJoin, yA);
+      drawLine(xEnd, yB, xJoin, yB);
+      drawLine(xJoin, yA, xJoin, yB);
+      drawLine(xJoin, yMid, xL3 - colGap/2, yMid);
+    }
+
+    // Round 3: matchups 0..1 (left side)
+    for (let m = 0; m < 2; m++) {
+      const mm = r3[m];
+      const a = mm?.a || null;
+      const b = mm?.b || null;
+      const win = mm?.winner || null;
+      const pts = win ? winnerPoints("R3", mm) : 0;
+
+      const yA = yR3[m*2];
+      const yB = yR3[m*2 + 1];
+      const yMid = (yA + yB) / 2;
+
+      drawEntry(xL3, yA, a, win === a, win === a ? pts : 0);
+      drawEntry(xL3, yB, b, win === b, win === b ? pts : 0);
+
+      // Connector to left semifinal
+      const xEnd = xL3 + colTextW;
+      const xJoin = xEnd + connW;
+      drawLine(xEnd, yA, xJoin, yA);
+      drawLine(xEnd, yB, xJoin, yB);
+      drawLine(xJoin, yA, xJoin, yB);
+      drawLine(xJoin, yMid, xSemiL - colGap/2, yMid);
     }
   }
 
-  function drawMatchColumnRight(roundJoinX, parentYs, matchYs) {
-    // Mirror: name lines start at roundJoinX+joinGap
-    for (let m = 0; m < matchYs.length; m++) {
-      const yTop = parentYs[m * 2];
-      const yBot = parentYs[m * 2 + 1];
-      const yMid = matchYs[m];
+  function drawSideRight() {
+    const r1 = run.bracket.rounds.R1 || [];
+    const r2 = run.bracket.rounds.R2 || [];
+    const r3 = run.bracket.rounds.R3 || [];
 
-      const nameStartX = roundJoinX + joinGap;
-      const nameEndX = nameStartX + nameLineW;
+    // Round 1: matchups 8..15 (16 entries)
+    for (let m = 0; m < 8; m++) {
+      const mm = r1[8 + m];
+      const a = mm?.a || null;
+      const b = mm?.b || null;
+      const win = mm?.winner || null;
+      const pts = win ? winnerPoints("R1", mm) : 0;
 
-      drawLine(nameStartX, yTop, nameEndX, yTop);
-      drawLine(nameStartX, yBot, nameEndX, yBot);
+      const yA = yR1[m*2];
+      const yB = yR1[m*2 + 1];
 
-      drawLine(roundJoinX, yTop, nameStartX, yTop);
-      drawLine(roundJoinX, yBot, nameStartX, yBot);
+      drawEntry(xR1, yA, a, win === a, win === a ? pts : 0);
+      drawEntry(xR1, yB, b, win === b, win === b ? pts : 0);
 
-      drawLine(roundJoinX, yTop, roundJoinX, yBot);
-      drawLine(roundJoinX - 14, yMid, roundJoinX, yMid);
+      // Connectors to Round 2 (going left)
+      const xStart = xR1;
+      const xJoin = xStart - connW;
+      const xEnd = xR1 + colTextW;
+
+      // Draw from just before text area (so lines don't cross text)
+      const xLine = xR1 - colGap/2;
+      drawLine(xLine, yA, xJoin, yA);
+      drawLine(xLine, yB, xJoin, yB);
+      drawLine(xJoin, yA, xJoin, yB);
+
+      const yMid = (yA + yB) / 2;
+      drawLine(xJoin, yMid, xR2 + colTextW + colGap/2, yMid);
+    }
+
+    // Round 2: matchups 4..7 (right side)
+    for (let m = 0; m < 4; m++) {
+      const mm = r2[4 + m];
+      const a = mm?.a || null;
+      const b = mm?.b || null;
+      const win = mm?.winner || null;
+      const pts = win ? winnerPoints("R2", mm) : 0;
+
+      const yA = yR2[m*2];
+      const yB = yR2[m*2 + 1];
+      const yMid = (yA + yB) / 2;
+
+      drawEntry(xR2, yA, a, win === a, win === a ? pts : 0);
+      drawEntry(xR2, yB, b, win === b, win === b ? pts : 0);
+
+      const xLine = xR2 - colGap/2;
+      const xJoin = xLine - connW;
+      drawLine(xLine, yA, xJoin, yA);
+      drawLine(xLine, yB, xJoin, yB);
+      drawLine(xJoin, yA, xJoin, yB);
+
+      drawLine(xJoin, yMid, xR3 + colTextW + colGap/2, yMid);
+    }
+
+    // Round 3: matchups 2..3 (right side)
+    for (let m = 0; m < 2; m++) {
+      const mm = r3[2 + m];
+      const a = mm?.a || null;
+      const b = mm?.b || null;
+      const win = mm?.winner || null;
+      const pts = win ? winnerPoints("R3", mm) : 0;
+
+      const yA = yR3[m*2];
+      const yB = yR3[m*2 + 1];
+      const yMid = (yA + yB) / 2;
+
+      drawEntry(xR3, yA, a, win === a, win === a ? pts : 0);
+      drawEntry(xR3, yB, b, win === b, win === b ? pts : 0);
+
+      const xLine = xR3 - colGap/2;
+      const xJoin = xLine - connW;
+      drawLine(xLine, yA, xJoin, yA);
+      drawLine(xLine, yB, xJoin, yB);
+      drawLine(xJoin, yA, xJoin, yB);
+
+      drawLine(xJoin, yMid, xSemiR + semiTextW + colGap/2, yMid);
     }
   }
 
-  // Draw columns: Left R1/R2/R3 as blank bracket grid
-  drawMatchColumnLeft(xR1L, yR1, yR2);
-  drawMatchColumnLeft(xR2L, yR2, yR3);
-  drawMatchColumnLeft(xR3L, yR3, ySemi);
+  drawSideLeft();
+  drawSideRight();
 
-  // Right side (blank grid)
-  drawMatchColumnRight(xR1R, yR1, yR2);
-  drawMatchColumnRight(xR2R, yR2, yR3);
-  drawMatchColumnRight(xR3R, yR3, ySemi);
+  // Semifinals (R4) and Final (R5)
+  const r4 = run.bracket.rounds.R4 || [];
+  const r5 = run.bracket.rounds.R5 || [];
 
-  // Final Four (center): two semis, top (left side winner vs right side winner), bottom (left vs right)
-  // We'll draw the two semi "name lines" as blank grid with join at xFF and outgoing toward Finals join xFinal.
-  function drawFinalFour() {
-    for (let s = 0; s < 2; s++) {
-      const yMid = ySemi[s];
-      const yA = yMid - Math.round(r1Gap * 0.55);
-      const yB = yMid + Math.round(r1Gap * 0.55);
+  // Left semi (R4[0]) at ySemi[0], right semi (R4[1]) at ySemi[1]
+  function drawSemi(mm, x, y, side) {
+    const a = mm?.a || null;
+    const b = mm?.b || null;
+    const win = mm?.winner || null;
+    const pts = win ? winnerPoints("R4", mm) : 0;
 
-      // Left participant name line (from left R3 join area into FF)
-      const leftNameEnd = xFF - joinGap;
-      const leftNameStart = leftNameEnd - (nameLineW - 30);
+    const dy = r1Pitch * 0.30;
+    drawEntry(x, y - dy, a, win === a, win === a ? pts : 0);
+    drawEntry(x, y + dy, b, win === b, win === b ? pts : 0);
 
-      drawLine(leftNameStart, yA, leftNameEnd, yA);
-      drawLine(leftNameStart, yB, leftNameEnd, yB);
-      drawLine(leftNameEnd, yA, xFF, yA);
-      drawLine(leftNameEnd, yB, xFF, yB);
-      drawLine(xFF, yA, xFF, yB);
-      drawLine(xFF, yMid, xFF + 14, yMid);
+    // Connector to final (toward center)
+    const xEnd = x + semiTextW;
+    const xJoin = side === "L" ? (xEnd + connW) : (x - connW);
+    const xLine = side === "L" ? xEnd : (x - colGap/2);
+    drawLine(xLine, y - dy, xJoin, y - dy);
+    drawLine(xLine, y + dy, xJoin, y + dy);
+    drawLine(xJoin, y - dy, xJoin, y + dy);
 
-      // Outgoing to Finals join
-      drawLine(xFF + 14, yMid, xFinal - 10, yMid);
-    }
-  }
-  drawFinalFour();
-
-  // Finals (blank): connect two semi winners to a Finals join at xFinal, then to Champion line
-  function drawFinalsAndChampion() {
-    const yTop = ySemi[0];
-    const yBot = ySemi[1];
-
-    // Finals join vertical
-    drawLine(xFinal, yTop, xFinal, yBot);
-
-    // Name lines for finals (short), text sits on the horizontal segments just before xFinal
-    const finalsNameEnd = xFinal - joinGap;
-    const finalsNameStart = finalsNameEnd - 210;
-    drawLine(finalsNameStart, yTop, finalsNameEnd, yTop);
-    drawLine(finalsNameStart, yBot, finalsNameEnd, yBot);
-    drawLine(finalsNameEnd, yTop, xFinal, yTop);
-    drawLine(finalsNameEnd, yBot, xFinal, yBot);
-
-    // Midpoint to champion
-    drawLine(xFinal, yFinal, xFinal + 14, yFinal);
-
-    // Champion horizontal line
-    const champLineStart = xFinal + 14;
-    const champLineEnd = xChamp + 120;
-    drawLine(champLineStart, yFinal, champLineEnd, yFinal);
-
-    // small vertical from final midpoint to champion label line (cosmetic)
-    drawLine(xChamp + 120, yFinal - 16, xChamp + 120, yFinal + 16);
-  }
-  drawFinalsAndChampion();
-
-  // Now place names on top of the lines using current bracket state
-  // Left rounds
-  function placeNamesLeft() {
-    const b = run?.bracket;
-    if (!b) return;
-
-    // R1 left uses ids 1..16
-    for (let i = 0; i < 8; i++) {
-      const m = b.rounds?.R1?.[i];
-      const yTop = yR1[i * 2];
-      const yBot = yR1[i * 2 + 1];
-
-      const nameX = (xR1L - joinGap) - nameLineW + 6;
-      const winnerId = m?.winnerId || null;
-      const wp = winnerId ? winnerPointsForMatch(1, winnerId) : null;
-
-      drawTextOnLine(entryText(m?.a, winnerId, wp), nameX, yTop, "left");
-      drawTextOnLine(entryText(m?.b, winnerId, wp), nameX, yBot, "left");
-    }
-
-    // R2 left matchups 0..3 are derived from R1[0..7]
-    for (let i = 0; i < 4; i++) {
-      const m = b.rounds?.R2?.[i];
-      const yTop = yR2[i * 2];
-      const yBot = yR2[i * 2 + 1];
-
-      const nameX = (xR2L - joinGap) - nameLineW + 6;
-      const winnerId = m?.winnerId || null;
-      const wp = winnerId ? winnerPointsForMatch(2, winnerId) : null;
-
-      drawTextOnLine(entryText(m?.a, winnerId, wp), nameX, yTop, "left");
-      drawTextOnLine(entryText(m?.b, winnerId, wp), nameX, yBot, "left");
-    }
-
-    // R3 left matchups 0..1
-    for (let i = 0; i < 2; i++) {
-      const m = b.rounds?.R3?.[i];
-      const yTop = yR3[i * 2];
-      const yBot = yR3[i * 2 + 1];
-
-      const nameX = (xR3L - joinGap) - nameLineW + 6;
-      const winnerId = m?.winnerId || null;
-      const wp = winnerId ? winnerPointsForMatch(3, winnerId) : null;
-
-      drawTextOnLine(entryText(m?.a, winnerId, wp), nameX, yTop, "left");
-      drawTextOnLine(entryText(m?.b, winnerId, wp), nameX, yBot, "left");
-    }
+    // go to final centerline
+    drawLine(xJoin, y, xFinal - (side === "L" ? colGap/2 : - (semiTextW + colGap/2)), y);
   }
 
-  function placeNamesRight() {
-    const b = run?.bracket;
-    if (!b) return;
+  // Labels for center
+  ctx.textAlign = "center";
+  ctx.fillStyle = "rgba(17,24,39,.70)";
+  ctx.font = fontLabel;
+  ctx.fillText("Final", W/2, yFinal - 70);
+  ctx.fillText("Champion", W/2, 78);
 
-    // R1 right uses ids 17..32 (matches index 8..15)
-    for (let i = 0; i < 8; i++) {
-      const m = b.rounds?.R1?.[8 + i];
-      const yTop = yR1[i * 2];
-      const yBot = yR1[i * 2 + 1];
+  drawSemi(r4[0], xSemiL, ySemi[0], "L");
+  drawSemi(r4[1], xSemiR, ySemi[1], "R");
 
-      const nameX = (xR1R + joinGap) + 6;
-      const winnerId = m?.winnerId || null;
-      const wp = winnerId ? winnerPointsForMatch(1, winnerId) : null;
+  // Final entries (R5[0])
+  const final = r5[0] || null;
+  if (final) {
+    const a = final.a || null;
+    const b = final.b || null;
+    const win = final.winner || null;
+    const pts = win ? winnerPoints("R5", final) : 0;
 
-      drawTextOnLine(entryText(m?.a, winnerId, wp), nameX, yTop, "left");
-      drawTextOnLine(entryText(m?.b, winnerId, wp), nameX, yBot, "left");
+    const dy = r1Pitch * 0.34;
+    // Final text width uses semiTextW for consistency
+    drawEntry(xFinal, yFinal - dy, a, win === a, win === a ? pts : 0);
+    drawEntry(xFinal, yFinal + dy, b, win === b, win === b ? pts : 0);
+
+    // Connector up to champion
+    const xEnd = xFinal + semiTextW;
+    const xJoin = xEnd + connW;
+    drawLine(xEnd, yFinal - dy, xJoin, yFinal - dy);
+    drawLine(xEnd, yFinal + dy, xJoin, yFinal + dy);
+    drawLine(xJoin, yFinal - dy, xJoin, yFinal + dy);
+
+    const champY = 42;
+    drawLine(xJoin, yFinal, xJoin, champY + 24);
+    drawLine(xJoin, champY + 24, xChamp - colGap/2, champY + 24);
+
+    // Champion text (top center, on a line)
+    const champ = final.winner || null;
+    if (champ) {
+      ctx.fillStyle = "#111827";
+      ctx.font = "900 26px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+      ctx.textAlign = "left";
+      ctx.fillText(labelFor(champ), xChamp, champY + 24);
     }
-
-    // R2 right matchups 4..7
-    for (let i = 0; i < 4; i++) {
-      const m = b.rounds?.R2?.[4 + i];
-      const yTop = yR2[i * 2];
-      const yBot = yR2[i * 2 + 1];
-
-      const nameX = (xR2R + joinGap) + 6;
-      const winnerId = m?.winnerId || null;
-      const wp = winnerId ? winnerPointsForMatch(2, winnerId) : null;
-
-      drawTextOnLine(entryText(m?.a, winnerId, wp), nameX, yTop, "left");
-      drawTextOnLine(entryText(m?.b, winnerId, wp), nameX, yBot, "left");
-    }
-
-    // R3 right matchups 2..3
-    for (let i = 0; i < 2; i++) {
-      const m = b.rounds?.R3?.[2 + i];
-      const yTop = yR3[i * 2];
-      const yBot = yR3[i * 2 + 1];
-
-      const nameX = (xR3R + joinGap) + 6;
-      const winnerId = m?.winnerId || null;
-      const wp = winnerId ? winnerPointsForMatch(3, winnerId) : null;
-
-      drawTextOnLine(entryText(m?.a, winnerId, wp), nameX, yTop, "left");
-      drawTextOnLine(entryText(m?.b, winnerId, wp), nameX, yBot, "left");
-    }
+  } else {
+    // Still show an empty champion header space for consistency
   }
-
-  function placeFinalFourFinalsChampion() {
-    const b = run?.bracket;
-    if (!b) return;
-
-    // Semis (Final Four): store in R4[0] and R4[1] if present
-    // We'll render text at the two semi y positions, above/below each semi midpoint.
-    for (let s = 0; s < 2; s++) {
-      const m = b.rounds?.R4?.[s];
-      const yMid = ySemi[s];
-      const yA = yMid - Math.round(r1Gap * 0.55);
-      const yB = yMid + Math.round(r1Gap * 0.55);
-
-      // left participant line on left of xFF
-      const nameXLeft = (xFF - joinGap) - (nameLineW - 30) + 6;
-
-      const winnerId = m?.winnerId || null;
-      const wp = winnerId ? winnerPointsForMatch(4, winnerId) : null;
-
-      drawTextOnLine(entryText(m?.a, winnerId, wp), nameXLeft, yA, "left");
-      drawTextOnLine(entryText(m?.b, winnerId, wp), nameXLeft, yB, "left");
-    }
-
-    // Finals: R5[0]
-    const fm = b.rounds?.R5?.[0];
-    if (fm) {
-      const winnerId = fm?.winnerId || null;
-      const wp = winnerId ? winnerPointsForMatch(5, winnerId) : null;
-
-      // place finals participants on short lines before xFinal at ySemi[0]/ySemi[1]
-      const finalsNameEnd = xFinal - joinGap;
-      const finalsNameStart = finalsNameEnd - 210;
-      const nameX = finalsNameStart + 6;
-      drawTextOnLine(entryText(fm?.a, winnerId, wp), nameX, ySemi[0], "left");
-      drawTextOnLine(entryText(fm?.b, winnerId, wp), nameX, ySemi[1], "left");
-
-      // Champion: R6[0] or fm.winnerId if champ round absent
-      const champId = (b.rounds?.R6?.[0]?.winnerId) || winnerId || null;
-      if (champId) {
-        const champRide = getRideById(champId);
-        const seed = champRide?.seed != null ? String(champRide.seed) : "";
-        const name = champRide?.shortName || champRide?.id || "";
-        const text = `${seed} ${name}`.trim();
-        // place near champion line
-        drawTextOnLine(text, xFinal + 22, yFinal, "left");
-      }
-    }
-  }
-
-  placeNamesLeft();
-  placeNamesRight();
-  placeFinalFourFinalsChampion();
 
   return canvas.toDataURL("image/png");
 }
