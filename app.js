@@ -987,8 +987,9 @@ function buildBracketUpdateImage(run) {
   const yR1 = Array.from({ length: teamsPerSide }, (_, i) => topY + r1Pitch * (i + 0.5));
   const yR2 = Array.from({ length: 8 }, (_, i) => (yR1[i*2] + yR1[i*2 + 1]) / 2);
   const yR3 = Array.from({ length: 4 }, (_, i) => (yR2[i*2] + yR2[i*2 + 1]) / 2);
-  const ySemi = Array.from({ length: 2 }, (_, i) => (yR3[i*2] + yR3[i*2 + 1]) / 2);
-  const yFinal = (ySemi[0] + ySemi[1]) / 2;
+  const ySemiTop = top + usableH * 0.26;
+  const ySemiBot = top + usableH * 0.74;
+  const yFinal = top + usableH * 0.50;
 
   // Draw left side: R1->R2->R3 with classic bracket connectors
   function drawSideLeft() {
@@ -1171,7 +1172,7 @@ function buildBracketUpdateImage(run) {
   const r4 = run.bracket.rounds.R4 || [];
   const r5 = run.bracket.rounds.R5 || [];
 
-  // Left semi (R4[0]) at ySemi[0], right semi (R4[1]) at ySemi[1]
+  // Left semi (R4[0]) at ySemiTop, right semi (R4[1]) at ySemiBot
   function drawSemi(mm, x, y, side) {
     const a = mm?.a || null;
     const b = mm?.b || null;
@@ -1198,11 +1199,12 @@ function buildBracketUpdateImage(run) {
   ctx.textAlign = "center";
   ctx.fillStyle = "rgba(17,24,39,.70)";
   ctx.font = fontLabel;
+  ctx.fillText("Final Four", W/2, 96);
   ctx.fillText("Final", W/2, yFinal - 70);
-  ctx.fillText("Champion", W/2, 78);
+  ctx.fillText("Champion", W/2, 74);
 
-  drawSemi(r4[0], xSemiL, ySemi[0], "L");
-  drawSemi(r4[1], xSemiR, ySemi[1], "R");
+  drawSemi(r4[0], xSemiL, ySemiTop, "L");
+  drawSemi(r4[1], xSemiR, ySemiBot, "R");
 
   // Final entries (R5[0])
   const final = r5[0] || null;
