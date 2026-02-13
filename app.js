@@ -891,8 +891,19 @@ function buildBracketUpdateImage(run) {
 
   // Keep text readable; tighten by using the available height efficiently
   const teams = 32;
-  const pitch = usableH / teams;
-  const yBase = Array.from({ length: teams }, (_, i) => marginTop + pitch * (i + 0.5));
+  // --- vertical spacing: keep the 2 rides in a matchup tight, add extra space between matchups,
+// and add a slightly larger gap between the two bracket halves (between teams 16 and 17).
+const matchups = teams / 2;
+const matchGapFactor = 0.5;   // +50% spacing between matchups vs within-match spacing
+const halfGapFactor = 1.0;    // extra gap between halves (in units of teamStep)
+const totalUnits = (teams - 1) + matchGapFactor * (matchups - 1) + halfGapFactor;
+const teamStep = usableH / totalUnits;
+
+const yBase = Array.from({ length: teams }, (_, i) => {
+  const matchGap = Math.floor(i / 2) * (matchGapFactor * teamStep);
+  const halfGap = (i >= 16) ? (halfGapFactor * teamStep) : 0;
+  return marginTop + (i * teamStep) + matchGap + halfGap;
+});
 
   // Round entry Y levels: entries for each round are the centers of the previous round's matchups
   function pairCenters(arr) {
@@ -910,9 +921,9 @@ function buildBracketUpdateImage(run) {
 
   // Column widths (compact; leaves room for a champion column)
   const x0 = 70;
-  const colTextW = 320;
-  const connW = 50;
-  const colGap = 30;
+  const colTextW = 240; // tighter columns
+  const connW = 25;
+  const colGap = 15;
   const linePad = 10;
 
   const roundIds = ["R1", "R2", "R3", "R4", "R5"];
@@ -1015,8 +1026,12 @@ function buildBracketUpdateImage(run) {
   // Champion text (winner of R5 if present)
   const finalMatch = (rounds.R5 && rounds.R5[0]) ? rounds.R5[0] : null;
   const champId = finalMatch?.winner || null;
+  const yChamp = (yEntries[4][0] + yEntries[4][1]) / 2;
+
+  // Draw a visible champ line even before a winner is decided
+  drawLine(ctx, xChamp - linePad, yChamp, xChamp + colTextW, yChamp);
+
   if (champId) {
-    const yChamp = (yEntries[4][0] + yEntries[4][1]) / 2;
     // Draw a bold champion name on top of the champion line
     ctx.fillStyle = "#111827";
     ctx.font = "900 22px system-ui, -apple-system, Segoe UI, Roboto, Arial";
