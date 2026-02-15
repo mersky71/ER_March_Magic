@@ -841,8 +841,41 @@ async function openStartingBracketDialog() {
       `,
       buttons: [
         {
-          text: "Download PNG",
+          text: "Print",
           className: "btn btnPrimary",
+          action: () => {
+            // Open a print-friendly window with just the image
+            const w = window.open("", "_blank", "noopener,noreferrer");
+            if (!w) { showToast("Pop-up blocked. Allow pop-ups to print."); return; }
+
+            const safeTitle = "ER March Magic - Starting Bracket";
+            w.document.open();
+            w.document.write(`<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>${safeTitle}</title>
+  <style>
+    @page { size: letter landscape; margin: 0.35in; }
+    html, body { margin: 0; padding: 0; }
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+    .wrap { display:flex; justify-content:center; align-items:flex-start; padding: 0; }
+    img { width: 100%; height: auto; max-width: 10.4in; }
+  </style>
+</head>
+<body>
+  <div class="wrap"><img src="${dataUrl}" alt="Starting bracket" /></div>
+  <script>
+    window.onload = () => { window.focus(); window.print(); };
+  </script>
+</body>
+</html>`);
+            w.document.close();
+          }
+        },
+        {
+          text: "Download PNG",
+          className: "btn",
           action: () => {
             const a = document.createElement("a");
             a.href = dataUrl;
@@ -869,7 +902,8 @@ function openRulesDialog() {
       <div style="max-height:70vh; overflow:auto; padding-right:2px; line-height:1.35;">
         <div style="font-weight:900; font-size:16px; margin-top:2px;">The Challenge</div>
         <ul style="margin:8px 0 14px 18px;">
-          <li>A 32-attraction bracket - complete attractions to advance them to the next round. Which ride will win your bracket?!</li>
+          <li>A new challenge from the Every Ride Challenge team!</li>
+          <li>March Magic is a 32-attraction bracket-style event - complete attractions to advance them to the next round. Which ride will win your bracket?!</li>
           <li>Earn points, try to score the most!</li>
         </ul>
 
@@ -891,6 +925,7 @@ function openRulesDialog() {
 
         <div style="font-weight:900; font-size:16px; margin-top:2px;">Other considerations</div>
         <ul style="margin:8px 0 0 18px;">
+          <li>Points in later rounds: Round 1 points multiplied by round number</li>
           <li>No Early Entry - start at regular opening time</li>
           <li>LL Multi Pass and LL Single Pass are allowed; no LLs carried over from a previous day</li>
           <li>A multi-experience (anytime) pass must be used for its original ride</li>
@@ -1003,16 +1038,25 @@ function buildStartingBracketImage(bgImg) {
     pairCenters(pairCenters(pairCenters(pairCenters(yBase))))
   ];
 
-  // Columns (same as update image; leaves empty room on the right)
+  // Columns (R1 is wider; later rounds keep original width but shift right accordingly)
   const x0 = 70;
-  const colTextW = 210;
+
+  const colTextW = 210;                 // R2+ text column width (original)
+  const colTextW_R1 = Math.round(colTextW * 1.25); // R1 only (+25%)
+
   const connW = 25;
   const colGap = 15;
   const linePad = 10;
 
   const roundIds = ["R1", "R2", "R3", "R4", "R5"];
   const xCols = [x0];
-  for (let i = 1; i < roundIds.length; i++) xCols.push(xCols[i - 1] + colTextW + connW + colGap);
+
+  // R2 starts after the widened R1 column
+  xCols.push(xCols[0] + colTextW_R1 + connW + colGap);
+
+  // R3+ use original width
+  for (let i = 2; i < roundIds.length; i++) xCols.push(xCols[i - 1] + colTextW + connW + colGap);
+
   const xChamp = xCols[xCols.length - 1] + colTextW + connW + colGap;
 
   // Typography
@@ -1064,7 +1108,10 @@ function buildStartingBracketImage(bgImg) {
   ctx.font = fontLabel;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  for (let i = 0; i < roundIds.length; i++) ctx.fillText(roundIds[i], xCols[i] + colTextW / 2, 78);
+  for (let i = 0; i < roundIds.length; i++) {
+    const tw = (i === 0) ? colTextW_R1 : colTextW;
+    ctx.fillText(roundIds[i], xCols[i] + tw / 2, 78);
+  }
   ctx.fillText("CHAMP", xChamp + colTextW / 2, 78);
 
   // Bracket structure comes from the canonical initial bracket (same seeds/matchups as the app)
@@ -1111,6 +1158,121 @@ function buildStartingBracketImage(bgImg) {
   // Champion line (blank)
   const yChamp = (yEntries[4][0] + yEntries[4][1]) / 2;
   drawLine(xChamp - linePad, yChamp, xChamp + colTextW, yChamp);
+
+
+  // ---- Rules block (lower-right) ----
+  const bracketRight = xChamp + colTextW + 20;
+  const boxX = Math.min(Math.max(bracketRight + 40, W * 0.62), W - 520);
+  const boxY = Math.round(H * 0.56);
+  const boxW = W - boxX - 60;
+  const boxH = H - boxY - 60;
+
+  function roundRect(x, y, w, h, r) {
+    const rr = Math.min(r, w / 2, h / 2);
+    ctx.beginPath();
+    ctx.moveTo(x + rr, y);
+    ctx.arcTo(x + w, y, x + w, y + h, rr);
+    ctx.arcTo(x + w, y + h, x, y + h, rr);
+    ctx.arcTo(x, y + h, x, y, rr);
+    ctx.arcTo(x, y, x + w, y, rr);
+    ctx.closePath();
+  }
+
+  // Backing so black text is readable on the map
+  ctx.save();
+  ctx.globalAlpha = 0.88;
+  ctx.fillStyle = "#ffffff";
+  roundRect(boxX, boxY, boxW, boxH, 18);
+  ctx.fill();
+  ctx.restore();
+
+  // Text wrapping helper
+  function wrapLines(text, maxWidth, font) {
+    ctx.font = font;
+    const words = String(text).split(/\s+/).filter(Boolean);
+    const lines = [];
+    let line = "";
+    for (const w of words) {
+      const test = line ? (line + " " + w) : w;
+      if (ctx.measureText(test).width <= maxWidth) {
+        line = test;
+      } else {
+        if (line) lines.push(line);
+        line = w;
+      }
+    }
+    if (line) lines.push(line);
+    return lines;
+  }
+
+  const pad = 20;
+  let x = boxX + pad;
+  let y = boxY + pad;
+
+  const fontH = "900 22px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  const fontB = "700 16px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  const fontS = "700 15px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  const maxTextW = boxW - pad * 2;
+
+  function drawHeader(t) {
+    ctx.fillStyle = "#000";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "top";
+    ctx.font = fontH;
+    ctx.fillText(t, x, y);
+    y += 26;
+  }
+
+  function drawBullets(items) {
+    for (const item of items) {
+      const bullet = "•";
+      ctx.font = fontB;
+      const lines = wrapLines(item, maxTextW - 18, fontB);
+      ctx.fillStyle = "#000";
+      ctx.fillText(bullet, x, y);
+      let yy = y;
+      for (let i = 0; i < lines.length; i++) {
+        ctx.fillText(lines[i], x + 18, yy);
+        yy += 19;
+      }
+      y = yy + 4;
+      // stop if we're running out of vertical space
+      if (y > boxY + boxH - 30) return;
+    }
+  }
+
+  drawHeader("The Challenge");
+  drawBullets([
+    "A new challenge from the Every Ride Challenge team!",
+    "March Magic is a 32-attraction bracket-style event — complete attractions to advance them to the next round.",
+    "Earn points, try to score the most!"
+  ]);
+
+  drawHeader("Required Elements");
+  drawBullets([
+    "Take a selfie while in the ride vehicle (or show seat/with character) and tweet with @ERMarchMagic and tag @rideevery for credit",
+    "If you use a LL, include a screenshot showing the ride and your name",
+    "An attraction can advance only if it has an opponent (no riding the same attraction twice to jump rounds)",
+    "For attractions where you could “hop off,” include proof you experienced the attraction (mid-ride/show photo or video)"
+  ]);
+
+  drawHeader("Strongly Encouraged");
+  drawBullets([
+    "Use a time stamp camera to help the official scorers",
+    "Use the app to draft your tweets and track your run [link]",
+    "Create a Give Kids the World fundraising page and include the link in your tweets [link]",
+    "Meet in the Hub at end of night for group photo!"
+  ]);
+
+  drawHeader("Other considerations");
+  ctx.font = fontS;
+  drawBullets([
+    "Points in later rounds: Round 1 points multiplied by round number",
+    "No Early Entry — start at regular opening time",
+    "LL Multi Pass and LL Single Pass are allowed; no LLs carried over from a previous day",
+    "A multi-experience (anytime) pass must be used for its original ride",
+    "[Any restrictions on doing later rounds before earlier?]"
+  ]);
 
   return canvas.toDataURL("image/png");
 }
