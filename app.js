@@ -839,55 +839,47 @@ async function openStartingBracketDialog() {
           <img src="${dataUrl}" alt="Starting bracket" style="max-width:100%; border-radius:16px; border:1px solid rgba(0,0,0,.15);" />
         </div>
       `,
-      buttons: [
-        {
-          text: "Print",
-          className: "btn btnPrimary",
-          action: () => {
-            // Open a print-friendly window with just the image
-            const w = window.open("", "_blank", "noopener,noreferrer");
-            if (!w) { showToast("Pop-up blocked. Allow pop-ups to print."); return; }
+      
+buttons: [
+  {
+    text: "Share",
+    className: "btn btnPrimary",
+    action: async () => {
+      try {
+        const blob = await (await fetch(dataUrl)).blob();
+        const file = new File([blob], "ER_March_Magic_starting_bracket.png", { type: "image/png" });
 
-            const safeTitle = "ER March Magic - Starting Bracket";
-            w.document.open();
-            w.document.write(`<!doctype html>
-<html>
-<head>
-  <meta charset="utf-8" />
-  <title>${safeTitle}</title>
-  <style>
-    @page { size: letter landscape; margin: 0.35in; }
-    html, body { margin: 0; padding: 0; }
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
-    .wrap { display:flex; justify-content:center; align-items:flex-start; padding: 0; }
-    img { width: 100%; height: auto; max-width: 10.4in; }
-  </style>
-</head>
-<body>
-  <div class="wrap"><img src="${dataUrl}" alt="Starting bracket" /></div>
-  <script>
-    window.onload = () => { window.focus(); window.print(); };
-  </script>
-</body>
-</html>`);
-            w.document.close();
-          }
-        },
-        {
-          text: "Download PNG",
-          className: "btn",
-          action: () => {
-            const a = document.createElement("a");
-            a.href = dataUrl;
-            a.download = "ER_March_Magic_starting_bracket.png";
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-          }
-        },
-        { text: "Close", className: "btn", action: () => closeDialog() }
-      ]
-    });
+        const canShare =
+          !!(navigator.share && navigator.canShare && navigator.canShare({ files: [file] }));
+
+        if (!canShare) {
+          showToast("Sharing isn't available on this device.");
+          return;
+        }
+
+        await navigator.share({
+          files: [file],
+          title: "ER March Magic - Starting Bracket"
+        });
+      } catch {
+        // cancelled or failed
+      }
+    }
+  },
+  {
+    text: "Download",
+    className: "btn",
+    action: () => {
+      const a = document.createElement("a");
+      a.href = dataUrl;
+      a.download = "ER_March_Magic_starting_bracket.png";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    }
+  },
+  { text: "Close", className: "btn", action: () => closeDialog() }
+]
   } catch (e) {
     console.error(e);
     showToast("Could not build starting bracket.");
@@ -1124,7 +1116,8 @@ function buildStartingBracketImage(bgImg) {
     const matches = rounds[rid] || [];
     const entryYs = yEntries[r];
     const xText = xCols[r];
-    const joinX = xText + colTextW + connW;
+    const tw = (r === 0) ? colTextW_R1 : colTextW;
+    const joinX = xText + tw + connW;
     const nameStartX = xText - linePad;
 
     const nextNameStartX = (r < roundIds.length - 1)
@@ -1160,14 +1153,15 @@ function buildStartingBracketImage(bgImg) {
   drawLine(xChamp - linePad, yChamp, xChamp + colTextW, yChamp);
 
 
-  // ---- Rules block (lower-right) ----
-  const bracketRight = xChamp + colTextW + 20;
-  const boxX = Math.min(Math.max(bracketRight + 40, W * 0.62), W - 520);
-  const boxY = Math.round(H * 0.56);
-  const boxW = W - boxX - 60;
-  const boxH = H - boxY - 60;
+  
+// ---- Rules block (lower-right) ----
+// Left edge starts at the CHAMP column so we can use the open space to the right.
+const boxX = xChamp;                    // CHAMP column start
+const boxY = Math.round(H * 0.56);
+const boxW = W - boxX - 60;
+const boxH = H - boxY - 60;
 
-  function roundRect(x, y, w, h, r) {
+function roundRect(x, y, w, h, r) {
     const rr = Math.min(r, w / 2, h / 2);
     ctx.beginPath();
     ctx.moveTo(x + rr, y);
@@ -1205,14 +1199,24 @@ function buildStartingBracketImage(bgImg) {
     return lines;
   }
 
-  const pad = 20;
+  const pad = 26;
   let x = boxX + pad;
   let y = boxY + pad;
 
+  const fontTitle = "900 30px system-ui, -apple-system, Segoe UI, Roboto, Arial";
   const fontH = "900 22px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-  const fontB = "700 16px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-  const fontS = "700 15px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  const fontB = "700 18px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  const fontS = "700 17px system-ui, -apple-system, Segoe UI, Roboto, Arial";
   const maxTextW = boxW - pad * 2;
+
+  // Centered title
+  ctx.fillStyle = "#000";
+  ctx.font = fontTitle;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "top";
+  ctx.fillText("Rules", boxX + boxW / 2, y);
+  y += 40;
+
 
   function drawHeader(t) {
     ctx.fillStyle = "#000";
@@ -1220,7 +1224,7 @@ function buildStartingBracketImage(bgImg) {
     ctx.textBaseline = "top";
     ctx.font = fontH;
     ctx.fillText(t, x, y);
-    y += 26;
+    y += 28;
   }
 
   function drawBullets(items) {
@@ -1546,7 +1550,8 @@ const rounds = (() => {
     const matches = rounds[rid] || [];
     const entryYs = yEntries[r]; // length = 32 / (2^r)
     const xText = xCols[r];
-    const joinX = xText + colTextW + connW;
+    const tw = (r === 0) ? colTextW_R1 : colTextW;
+    const joinX = xText + tw + connW;
     const nameStartX = xText - linePad;
 
     const nextNameStartX = (r < roundIds.length - 1)
