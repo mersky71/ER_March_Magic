@@ -831,16 +831,21 @@ async function openStartingBracketDialog() {
   try {
     // Starting bracket does not depend on an active run.
     let bgImg = null;
-    try { bgImg = await loadImage("mkpark15.jpg"); } catch { bgImg = null; }
+    let qrAppImg = null;
+    let qrDonateImg = null;
 
-    const dataUrl = buildStartingBracketImage(bgImg);
+    try { bgImg = await loadImage("mkpark15.jpg"); } catch { bgImg = null; }
+    try { qrAppImg = await loadImage("mersky_app.png"); } catch { qrAppImg = null; }
+    try { qrDonateImg = await loadImage("ER_donation.png"); } catch { qrDonateImg = null; }
+
+    const dataUrl = buildStartingBracketImage(bgImg, qrAppImg, qrDonateImg);
 
     openDialog({
-      title: "Starting bracket",
-      body: "Round 1 matchups (printable). Fill in winners by hand.",
+      title: "Every Ride March Magic",
+      body: "",
       content: `
         <div style="display:flex; justify-content:center;">
-          <img src="${dataUrl}" alt="Starting bracket" style="max-width:100%; border-radius:16px; border:1px solid rgba(0,0,0,.15);" />
+          <img src="${dataUrl}" alt="Every Ride March Magic bracket" style="max-width:100%; border-radius:16px; border:1px solid rgba(0,0,0,.15);" />
         </div>
       `,
       buttons: [
@@ -862,7 +867,7 @@ async function openStartingBracketDialog() {
 
               await navigator.share({
                 files: [file],
-                title: "ER March Magic - Starting Bracket"
+                title: "Every Ride March Magic"
               });
             } catch {
               // cancelled or failed
@@ -972,7 +977,7 @@ async function openBracketImageDialog() {
   }
 }
 
-function buildStartingBracketImage(bgImg) {
+function buildStartingBracketImage(bgImg, qrAppImg, qrDonateImg) {
   // Printable starting bracket: 32 teams in R1 only, full bracket lines through CHAMP.
   const W = 2200;
   const H = 1600;
@@ -1156,16 +1161,14 @@ function buildStartingBracketImage(bgImg) {
   const yChamp = (yEntries[4][0] + yEntries[4][1]) / 2;
   drawLine(xChamp - linePad, yChamp, xChamp + colTextW, yChamp);
 
+  // ---- Rules block (lower-right) ----
+  // Left edge starts at the CHAMP column so we can use the open space to the right.
+  const boxX = xChamp;                    // CHAMP column start
+  const boxY = Math.round(H * 0.56);
+  const boxW = W - boxX - 60;
+  const boxH = H - boxY - 60;
 
-  
-// ---- Rules block (lower-right) ----
-// Left edge starts at the CHAMP column so we can use the open space to the right.
-const boxX = xChamp;                    // CHAMP column start
-const boxY = Math.round(H * 0.56);
-const boxW = W - boxX - 60;
-const boxH = H - boxY - 60;
-
-function roundRect(x, y, w, h, r) {
+  function roundRect(x, y, w, h, r) {
     const rr = Math.min(r, w / 2, h / 2);
     ctx.beginPath();
     ctx.moveTo(x + rr, y);
@@ -1175,14 +1178,6 @@ function roundRect(x, y, w, h, r) {
     ctx.arcTo(x, y, x + w, y, rr);
     ctx.closePath();
   }
-
-  // Backing so black text is readable on the map
-  ctx.save();
-  ctx.globalAlpha = 0.88;
-  ctx.fillStyle = "#ffffff";
-  roundRect(boxX, boxY, boxW, boxH, 18);
-  ctx.fill();
-  ctx.restore();
 
   // Text wrapping helper
   function wrapLines(text, maxWidth, font) {
@@ -1202,6 +1197,60 @@ function roundRect(x, y, w, h, r) {
     if (line) lines.push(line);
     return lines;
   }
+
+  // ---- QR codes (upper-right) ----
+  // Total width of both QR codes must not exceed the rules box width.
+  const qrGap = 26;
+  const qrTarget = 280;
+  const qrSize = Math.max(140, Math.min(qrTarget, Math.floor((boxW - qrGap) / 2)));
+  const qrTotalW = qrSize * 2 + qrGap;
+
+  // Place them in the open space at the upper-right, aligned within the rules region.
+  const qrX1 = boxX + Math.floor((boxW - qrTotalW) / 2);
+  const qrY = 120;
+  const qrX2 = qrX1 + qrSize + qrGap;
+
+  // Backing so they stay scannable over the map
+  const qrPad = 14;
+  ctx.save();
+  ctx.globalAlpha = 0.9;
+  ctx.fillStyle = "#ffffff";
+  roundRect(qrX1 - qrPad, qrY - qrPad, qrTotalW + qrPad * 2, qrSize + 92, 18);
+  ctx.fill();
+  ctx.restore();
+
+  // Draw images if present
+  try { if (qrAppImg) ctx.drawImage(qrAppImg, qrX1, qrY, qrSize, qrSize); } catch {}
+  try { if (qrDonateImg) ctx.drawImage(qrDonateImg, qrX2, qrY, qrSize, qrSize); } catch {}
+
+  // Labels under each QR
+  const labelFont = "800 18px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  ctx.fillStyle = "#000";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "top";
+  const labelMaxW = qrSize;
+  const labelY = qrY + qrSize + 12;
+
+  function drawLabel(centerX, text) {
+    const lines = wrapLines(text, labelMaxW, labelFont);
+    ctx.font = labelFont;
+    let yy = labelY;
+    for (const line of lines.slice(0, 3)) {
+      ctx.fillText(line, centerX, yy);
+      yy += 22;
+    }
+  }
+
+  drawLabel(qrX1 + qrSize / 2, "Use this web app to track your run and generate your tweets!");
+  drawLabel(qrX2 + qrSize / 2, "Make your fundraising page here!");
+
+  // Backing so black text is readable on the map
+  ctx.save();
+  ctx.globalAlpha = 0.88;
+  ctx.fillStyle = "#ffffff";
+  roundRect(boxX, boxY, boxW, boxH, 18);
+  ctx.fill();
+  ctx.restore();
 
   const pad = 26;
   let x = boxX + pad;
