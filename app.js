@@ -236,15 +236,44 @@ function renderStartPage() {
     openDialog({
       title: "Rules",
       body: "",
-      content: `<div class="card" style="border:1px solid rgba(17,24,39,.12);">
-        <div style="font-weight:900; margin-bottom:6px;">(Placeholder)</div>
-        <div class="p">We\'ll put the official ER March Magic Bracket Challenge rules here.</div>
-      </div>`,
+      content: `
+        <div style="max-height:70vh; overflow:auto; padding-right:2px;">
+          <div style="font-weight:900; font-size:16px; margin-top:2px;">The Challenge</div>
+          <ul style="margin:8px 0 14px 18px; color:#111827;">
+            <li>A 32-attraction bracket - complete attractions to advance them to the next round. Which ride will win your bracket?!</li>
+            <li>Earn points, try to score the most!</li>
+          </ul>
+
+          <div style="font-weight:900; font-size:16px; margin-top:2px;">Required Elements</div>
+          <ul style="margin:8px 0 14px 18px; color:#111827;">
+            <li>Take a selfie while in the ride vehicle (or show seat or with character) and tweet with hashtags @ERMarchMagic and tag @rideevery for credit for each</li>
+            <li>If you use a LL, include screenshot showing ride and your name in the tweet</li>
+            <li>An attraction can advance to the next round only if it has an "opponent" (no riding Space Mountain as your first 2 rides to advance it to Round 3)</li>
+            <li>For attractions where you could "hop off," include proof you experienced the attraction (mid-ride/show video or photo)</li>
+          </ul>
+
+          <div style="font-weight:900; font-size:16px; margin-top:2px;">Strongly Encouraged</div>
+          <ul style="margin:8px 0 14px 18px; color:#111827;">
+            <li>Use a time stamp camera to help out the official scorers</li>
+            <li>Use the app to draft your tweets and track your run <span style="color:#6b7280;">[add link]</span></li>
+            <li>Create a fundraising page to support Give Kids the World Village and include the link in your tweets <span style="color:#6b7280;">[add link]</span>. Share to family and friends!</li>
+            <li>Meet in the Hub at end of night for group photo!</li>
+          </ul>
+
+          <div style="font-weight:900; font-size:16px; margin-top:2px;">Other considerations</div>
+          <ul style="margin:8px 0 0 18px; color:#111827;">
+            <li>No Early Entry - start at regular opening time</li>
+            <li>LL Multi Pass and LL Single Pass are allowed; no LLs carried over from a previous day</li>
+            <li>A multi-experience (anytime) pass must be used for its original ride</li>
+            <li><span style="color:#6b7280;">[Any restrictions on doing later rounds before earlier?]</span></li>
+          </ul>
+        </div>
+      `,
       buttons: [{ text: "Close", className: "btn btnPrimary", action: () => closeDialog() }]
     });
   });
 
-  document.getElementById("historyBtn")?.addEventListener("click", () => openHistoryDialog());
+document.getElementById("historyBtn")?.addEventListener("click", () => openHistoryDialog());
 }
 
 function handleResumeMostRecent() {
