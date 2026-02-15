@@ -225,11 +225,7 @@ function renderStartPage() {
   });
 
   document.getElementById("bracketBtn")?.addEventListener("click", () => {
-    openDialog({
-      title: "Bracket",
-      body: "Bracket view coming next (and will support printing).",
-      buttons: [{ text: "Close", className: "btn btnPrimary", action: () => closeDialog() }]
-    });
+    openStartingBracketDialog();
   });
 
   document.getElementById("rulesBtn")?.addEventListener("click", () => {
@@ -274,6 +270,146 @@ function renderStartPage() {
   });
 
 document.getElementById("historyBtn")?.addEventListener("click", () => openHistoryDialog());
+}
+
+function openStartingBracketDialog() {
+  try {
+    const dataUrl = buildStartingBracketImage();
+    openDialog({
+      title: "Starting bracket (Round 1)",
+      body: "Landscape format for easy printing.",
+      content: `
+        <div style="display:flex; justify-content:center;">
+          <img src="${dataUrl}" alt="Starting bracket (Round 1)" style="max-width:100%; border-radius:16px; border:1px solid rgba(0,0,0,.15);" />
+        </div>
+      `,
+      buttons: [
+        {
+          text: "Download PNG",
+          className: "btn btnPrimary",
+          action: () => {
+            const a = document.createElement("a");
+            a.href = dataUrl;
+            a.download = "ER_March_Magic_R1_bracket.png";
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+          }
+        },
+        { text: "Close", className: "btn", action: () => closeDialog() }
+      ]
+    });
+  } catch (e) {
+    console.error(e);
+    showToast("Could not build bracket image.");
+  }
+}
+
+function buildStartingBracketImage() {
+  // R1-only, landscape, print-friendly. Uses the *same* ride order/matchups as the main bracket.
+  const W = 2200;
+  const H = 1600;
+
+  const canvas = document.createElement("canvas");
+  canvas.width = W;
+  canvas.height = H;
+  const ctx = canvas.getContext("2d");
+
+  // Background
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, W, H);
+
+  // Title
+  ctx.fillStyle = "#000000";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.font = "900 46px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  ctx.fillText("ER March Magic — Round 1 Bracket", W / 2, 70);
+
+  ctx.font = "600 26px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  ctx.fillText("Short name (Round 1 points)", W / 2, 120);
+
+  const marginL = 90;
+  const marginR = 90;
+  const marginTop = 170;
+  const marginBottom = 80;
+  const usableH = H - marginTop - marginBottom;
+
+  const colGap = 120;
+  const colW = (W - marginL - marginR - colGap) / 2;
+  const leftX = marginL;
+  const rightX = marginL + colW + colGap;
+
+  // 16 matchups total; render as 2 columns x 8 matchups
+  const matchups = [];
+  for (let i = 0; i < 32; i += 2) {
+    matchups.push([rides[i], rides[i + 1]]);
+  }
+
+  const perCol = 8;
+  const boxGap = 18;
+  const boxH = (usableH - boxGap * (perCol - 1)) / perCol;
+  const boxPadX = 18;
+  const line1Y = 0.38; // as fraction of boxH
+  const line2Y = 0.70;
+
+  const nameFont = "800 30px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  const seedFont = "700 26px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+
+  function rideText(r) {
+    const sn = r?.shortName ?? r?.id ?? "";
+    const pts = (r && Number.isFinite(r.pointsRound1)) ? r.pointsRound1 : "";
+    return `${sn} (${pts})`;
+  }
+
+  function drawMatchup(colX, idxInCol, a, b) {
+    const y = marginTop + idxInCol * (boxH + boxGap);
+
+    // light outline for print readability (text stays black)
+    ctx.strokeStyle = "rgba(0,0,0,.20)";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(colX, y, colW, boxH);
+
+    // divider between the two rides
+    ctx.strokeStyle = "rgba(0,0,0,.12)";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(colX, y + boxH / 2);
+    ctx.lineTo(colX + colW, y + boxH / 2);
+    ctx.stroke();
+
+    // seeds (left side)
+    ctx.fillStyle = "#000000";
+    ctx.textAlign = "left";
+    ctx.font = seedFont;
+    const seedA = (a && a.seed != null) ? String(a.seed) : "";
+    const seedB = (b && b.seed != null) ? String(b.seed) : "";
+    ctx.fillText(seedA, colX + boxPadX, y + boxH * line1Y);
+    ctx.fillText(seedB, colX + boxPadX, y + boxH * line2Y);
+
+    // names + points
+    ctx.font = nameFont;
+    const nameX = colX + boxPadX + 48;
+    ctx.fillText(rideText(a), nameX, y + boxH * line1Y);
+    ctx.fillText(rideText(b), nameX, y + boxH * line2Y);
+  }
+
+  // Left column: matchups 0..7, Right column: 8..15
+  for (let i = 0; i < matchups.length; i++) {
+    const col = i < perCol ? 0 : 1;
+    const idxInCol = col === 0 ? i : (i - perCol);
+    const x = col === 0 ? leftX : rightX;
+    const [a, b] = matchups[i];
+    drawMatchup(x, idxInCol, a, b);
+  }
+
+  // Footer note
+  ctx.fillStyle = "#000000";
+  ctx.textAlign = "center";
+  ctx.font = "600 22px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  ctx.fillText("Seeds shown at left · Points are Round 1 base points", W / 2, H - 32);
+
+  return canvas.toDataURL("image/png");
 }
 
 function handleResumeMostRecent() {
