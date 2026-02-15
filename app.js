@@ -225,191 +225,14 @@ function renderStartPage() {
   });
 
   document.getElementById("bracketBtn")?.addEventListener("click", () => {
-    openStartingBracketDialog();
+    openStartingBracketDialog().catch(() => {});
   });
 
   document.getElementById("rulesBtn")?.addEventListener("click", () => {
-    openDialog({
-      title: "Rules",
-      body: "",
-      content: `
-        <div style="max-height:70vh; overflow:auto; padding-right:2px;">
-          <div style="font-weight:900; font-size:16px; margin-top:2px;">The Challenge</div>
-          <ul style="margin:8px 0 14px 18px; color:#111827;">
-            <li>A 32-attraction bracket - complete attractions to advance them to the next round. Which ride will win your bracket?!</li>
-            <li>Earn points, try to score the most!</li>
-          </ul>
-
-          <div style="font-weight:900; font-size:16px; margin-top:2px;">Required Elements</div>
-          <ul style="margin:8px 0 14px 18px; color:#111827;">
-            <li>Take a selfie while in the ride vehicle (or show seat or with character) and tweet with hashtags @ERMarchMagic and tag @rideevery for credit for each</li>
-            <li>If you use a LL, include screenshot showing ride and your name in the tweet</li>
-            <li>An attraction can advance to the next round only if it has an "opponent" (no riding Space Mountain as your first 2 rides to advance it to Round 3)</li>
-            <li>For attractions where you could "hop off," include proof you experienced the attraction (mid-ride/show video or photo)</li>
-          </ul>
-
-          <div style="font-weight:900; font-size:16px; margin-top:2px;">Strongly Encouraged</div>
-          <ul style="margin:8px 0 14px 18px; color:#111827;">
-            <li>Use a time stamp camera to help out the official scorers</li>
-            <li>Use the app to draft your tweets and track your run <span style="color:#6b7280;">[add link]</span></li>
-            <li>Create a fundraising page to support Give Kids the World Village and include the link in your tweets <span style="color:#6b7280;">[add link]</span>. Share to family and friends!</li>
-            <li>Meet in the Hub at end of night for group photo!</li>
-          </ul>
-
-          <div style="font-weight:900; font-size:16px; margin-top:2px;">Other considerations</div>
-          <ul style="margin:8px 0 0 18px; color:#111827;">
-            <li>No Early Entry - start at regular opening time</li>
-            <li>LL Multi Pass and LL Single Pass are allowed; no LLs carried over from a previous day</li>
-            <li>A multi-experience (anytime) pass must be used for its original ride</li>
-            <li><span style="color:#6b7280;">[Any restrictions on doing later rounds before earlier?]</span></li>
-          </ul>
-        </div>
-      `,
-      buttons: [{ text: "Close", className: "btn btnPrimary", action: () => closeDialog() }]
-    });
+    openRulesDialog();
   });
 
-document.getElementById("historyBtn")?.addEventListener("click", () => openHistoryDialog());
-}
-
-function openStartingBracketDialog() {
-  try {
-    const dataUrl = buildStartingBracketImage();
-    openDialog({
-      title: "Starting bracket (Round 1)",
-      body: "Landscape format for easy printing.",
-      content: `
-        <div style="display:flex; justify-content:center;">
-          <img src="${dataUrl}" alt="Starting bracket (Round 1)" style="max-width:100%; border-radius:16px; border:1px solid rgba(0,0,0,.15);" />
-        </div>
-      `,
-      buttons: [
-        {
-          text: "Download PNG",
-          className: "btn btnPrimary",
-          action: () => {
-            const a = document.createElement("a");
-            a.href = dataUrl;
-            a.download = "ER_March_Magic_R1_bracket.png";
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-          }
-        },
-        { text: "Close", className: "btn", action: () => closeDialog() }
-      ]
-    });
-  } catch (e) {
-    console.error(e);
-    showToast("Could not build bracket image.");
-  }
-}
-
-function buildStartingBracketImage() {
-  // R1-only, landscape, print-friendly. Uses the *same* ride order/matchups as the main bracket.
-  const W = 2200;
-  const H = 1600;
-
-  const canvas = document.createElement("canvas");
-  canvas.width = W;
-  canvas.height = H;
-  const ctx = canvas.getContext("2d");
-
-  // Background
-  ctx.fillStyle = "#ffffff";
-  ctx.fillRect(0, 0, W, H);
-
-  // Title
-  ctx.fillStyle = "#000000";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.font = "900 46px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-  ctx.fillText("ER March Magic — Round 1 Bracket", W / 2, 70);
-
-  ctx.font = "600 26px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-  ctx.fillText("Short name (Round 1 points)", W / 2, 120);
-
-  const marginL = 90;
-  const marginR = 90;
-  const marginTop = 170;
-  const marginBottom = 80;
-  const usableH = H - marginTop - marginBottom;
-
-  const colGap = 120;
-  const colW = (W - marginL - marginR - colGap) / 2;
-  const leftX = marginL;
-  const rightX = marginL + colW + colGap;
-
-  // 16 matchups total; render as 2 columns x 8 matchups
-  const matchups = [];
-  for (let i = 0; i < 32; i += 2) {
-    matchups.push([rides[i], rides[i + 1]]);
-  }
-
-  const perCol = 8;
-  const boxGap = 18;
-  const boxH = (usableH - boxGap * (perCol - 1)) / perCol;
-  const boxPadX = 18;
-  const line1Y = 0.38; // as fraction of boxH
-  const line2Y = 0.70;
-
-  const nameFont = "800 30px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-  const seedFont = "700 26px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-
-  function rideText(r) {
-    const sn = r?.shortName ?? r?.id ?? "";
-    const pts = (r && Number.isFinite(r.pointsRound1)) ? r.pointsRound1 : "";
-    return `${sn} (${pts})`;
-  }
-
-  function drawMatchup(colX, idxInCol, a, b) {
-    const y = marginTop + idxInCol * (boxH + boxGap);
-
-    // light outline for print readability (text stays black)
-    ctx.strokeStyle = "rgba(0,0,0,.20)";
-    ctx.lineWidth = 2;
-    ctx.strokeRect(colX, y, colW, boxH);
-
-    // divider between the two rides
-    ctx.strokeStyle = "rgba(0,0,0,.12)";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(colX, y + boxH / 2);
-    ctx.lineTo(colX + colW, y + boxH / 2);
-    ctx.stroke();
-
-    // seeds (left side)
-    ctx.fillStyle = "#000000";
-    ctx.textAlign = "left";
-    ctx.font = seedFont;
-    const seedA = (a && a.seed != null) ? String(a.seed) : "";
-    const seedB = (b && b.seed != null) ? String(b.seed) : "";
-    ctx.fillText(seedA, colX + boxPadX, y + boxH * line1Y);
-    ctx.fillText(seedB, colX + boxPadX, y + boxH * line2Y);
-
-    // names + points
-    ctx.font = nameFont;
-    const nameX = colX + boxPadX + 48;
-    ctx.fillText(rideText(a), nameX, y + boxH * line1Y);
-    ctx.fillText(rideText(b), nameX, y + boxH * line2Y);
-  }
-
-  // Left column: matchups 0..7, Right column: 8..15
-  for (let i = 0; i < matchups.length; i++) {
-    const col = i < perCol ? 0 : 1;
-    const idxInCol = col === 0 ? i : (i - perCol);
-    const x = col === 0 ? leftX : rightX;
-    const [a, b] = matchups[i];
-    drawMatchup(x, idxInCol, a, b);
-  }
-
-  // Footer note
-  ctx.fillStyle = "#000000";
-  ctx.textAlign = "center";
-  ctx.font = "600 22px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-  ctx.fillText("Seeds shown at left · Points are Round 1 base points", W / 2, H - 32);
-
-  return canvas.toDataURL("image/png");
+  document.getElementById("historyBtn")?.addEventListener("click", () => openHistoryDialog());
 }
 
 function handleResumeMostRecent() {
@@ -1000,6 +823,85 @@ function loadImage(src) {
     img.src = src;
   });
 }
+async function openStartingBracketDialog() {
+  try {
+    // Starting bracket does not depend on an active run.
+    let bgImg = null;
+    try { bgImg = await loadImage("mkpark15.jpg"); } catch (e) { bgImg = null; }
+
+    const dataUrl = buildStartingBracketImage(bgImg);
+
+    openDialog({
+      title: "Starting bracket",
+      body: "Round 1 matchups (printable). Fill in winners by hand.",
+      content: `
+        <div style="display:flex; justify-content:center;">
+          <img src="${dataUrl}" alt="Starting bracket" style="max-width:100%; border-radius:16px; border:1px solid rgba(0,0,0,.15);" />
+        </div>
+      `,
+      buttons: [
+        {
+          text: "Download PNG",
+          className: "btn btnPrimary",
+          action: () => {
+            const a = document.createElement("a");
+            a.href = dataUrl;
+            a.download = "ER_March_Magic_starting_bracket.png";
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+          }
+        },
+        { text: "Close", className: "btn", action: () => closeDialog() }
+      ]
+    });
+  } catch (e) {
+    console.error(e);
+    showToast("Could not build starting bracket.");
+  }
+}
+
+function openRulesDialog() {
+  openDialog({
+    title: "Rules",
+    body: "",
+    content: `
+      <div style="max-height:70vh; overflow:auto; padding-right:2px; line-height:1.35;">
+        <div style="font-weight:900; font-size:16px; margin-top:2px;">The Challenge</div>
+        <ul style="margin:8px 0 14px 18px;">
+          <li>A 32-attraction bracket - complete attractions to advance them to the next round. Which ride will win your bracket?!</li>
+          <li>Earn points, try to score the most!</li>
+        </ul>
+
+        <div style="font-weight:900; font-size:16px; margin-top:2px;">Required Elements</div>
+        <ul style="margin:8px 0 14px 18px;">
+          <li>Take a selfie while in the ride vehicle (or show seat or with character) and tweet with hashtags @ERMarchMagic and tag @rideevery for credit for each</li>
+          <li>If you use a LL, include screenshot showing ride and your name in the tweet</li>
+          <li>An attraction can advance to the next round only if it has an “opponent” (no riding Space Mountain as your first 2 rides to advance it to Round 3)</li>
+          <li>For attractions where you could “hop off,” include proof you experienced the attraction (mid-ride/show video or photo)</li>
+        </ul>
+
+        <div style="font-weight:900; font-size:16px; margin-top:2px;">Strongly Encouraged</div>
+        <ul style="margin:8px 0 14px 18px;">
+          <li>Use a time stamp camera to help out the official scorers</li>
+          <li>Use the app to draft your tweets and track your run <span style="color:#6b7280;">[add link]</span></li>
+          <li>Create a fundraising page to support Give Kids the World Village and include the link in your tweets <span style="color:#6b7280;">[add link]</span>. Share to family and friends!</li>
+          <li>Meet in the Hub at end of night for group photo!</li>
+        </ul>
+
+        <div style="font-weight:900; font-size:16px; margin-top:2px;">Other considerations</div>
+        <ul style="margin:8px 0 0 18px;">
+          <li>No Early Entry - start at regular opening time</li>
+          <li>LL Multi Pass and LL Single Pass are allowed; no LLs carried over from a previous day</li>
+          <li>A multi-experience (anytime) pass must be used for its original ride</li>
+          <li><span style="color:#6b7280;">[Any restrictions on doing later rounds before earlier?]</span></li>
+        </ul>
+      </div>
+    `,
+    buttons: [{ text: "Close", className: "btn btnPrimary", action: () => closeDialog() }]
+  });
+}
+
 async function openBracketImageDialog() {
   try {
     // Make sure downstream rounds are synced so later-round slots populate when ready.
@@ -1038,6 +940,181 @@ async function openBracketImageDialog() {
     showToast("Could not build bracket image.");
   }
 }
+
+function buildStartingBracketImage(bgImg) {
+  // Printable starting bracket: 32 teams in R1 only, full bracket lines through CHAMP.
+  const W = 2200;
+  const H = 1600;
+
+  const canvas = document.createElement("canvas");
+  canvas.width = W;
+  canvas.height = H;
+  const ctx = canvas.getContext("2d");
+
+  // Background (cover crop)
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, W, H);
+  if (bgImg) {
+    const iw = bgImg.naturalWidth || bgImg.width;
+    const ih = bgImg.naturalHeight || bgImg.height;
+    const scale = Math.max(W / iw, H / ih);
+    const sw = W / scale;
+    const sh = H / scale;
+    const sx = (iw - sw) / 2;
+    const sy = (ih - sh) / 2;
+    try { ctx.drawImage(bgImg, sx, sy, sw, sh, 0, 0, W, H); } catch (e) { /* ignore */ }
+  }
+
+  // Title + headers (match update image style)
+  ctx.fillStyle = "#000";
+  ctx.font = "900 34px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText("ER March Magic Bracket Challenge", W / 2, 42);
+
+  // Geometry
+  const marginTop = 160;
+  const marginBottom = 80;
+  const usableH = H - marginTop - marginBottom;
+
+  const teams = 32;
+  const matchups = teams / 2;
+  const matchGapFactor = 0.5;
+  const halfGapFactor = 1.0;
+  const totalUnits = (teams - 1) + matchGapFactor * (matchups - 1) + halfGapFactor;
+  const teamStep = usableH / totalUnits;
+
+  const yBase = Array.from({ length: teams }, (_, i) => {
+    const matchGap = Math.floor(i / 2) * (matchGapFactor * teamStep);
+    const halfGap = (i >= 16) ? (halfGapFactor * teamStep) : 0;
+    return marginTop + (i * teamStep) + matchGap + halfGap;
+  });
+
+  function pairCenters(arr) {
+    const out = [];
+    for (let i = 0; i < arr.length; i += 2) out.push((arr[i] + arr[i + 1]) / 2);
+    return out;
+  }
+  const yEntries = [
+    yBase,
+    pairCenters(yBase),
+    pairCenters(pairCenters(yBase)),
+    pairCenters(pairCenters(pairCenters(yBase))),
+    pairCenters(pairCenters(pairCenters(pairCenters(yBase))))
+  ];
+
+  // Columns (same as update image; leaves empty room on the right)
+  const x0 = 70;
+  const colTextW = 210;
+  const connW = 25;
+  const colGap = 15;
+  const linePad = 10;
+
+  const roundIds = ["R1", "R2", "R3", "R4", "R5"];
+  const xCols = [x0];
+  for (let i = 1; i < roundIds.length; i++) xCols.push(xCols[i - 1] + colTextW + connW + colGap);
+  const xChamp = xCols[xCols.length - 1] + colTextW + connW + colGap;
+
+  // Typography
+  const fontEntry = "700 24px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  const fontLabel = "800 18px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+
+  // Helpers
+  function seedOf(id) {
+    const r = ridesById.get(id);
+    return r?.seed ?? "";
+  }
+  function labelFor(id) {
+    if (!id) return "";
+    const rawSeed = seedOf(id);
+    const s = shortNameFor(id);
+    const seedStr0 = (rawSeed === null || rawSeed === undefined) ? "" : String(rawSeed).trim();
+    if (!seedStr0) return s;
+    const before = (seedStr0.length === 1) ? "  " : "";
+    const after = "  ";
+    return `${before}${seedStr0}${after}${s}`;
+  }
+  const roundMetaR1 = ROUNDS.find(r => r.id === "R1") || ROUNDS[0];
+
+  // Drawing primitives
+  ctx.strokeStyle = "rgba(17,24,39,.22)";
+  ctx.lineWidth = 2;
+
+  function drawLine(x1, y1, x2, y2) {
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+  }
+
+  function drawR1EntryText(x, y, id) {
+    if (!id) return;
+    const base = labelFor(id);
+    const pts = pointsForRideInRound(ridesById.get(id), roundMetaR1);
+    const text = `${base} (${pts} pts)`;
+    ctx.fillStyle = "#000";
+    ctx.font = fontEntry;
+    ctx.textAlign = "left";
+    ctx.textBaseline = "bottom";
+    ctx.fillText(text, x, y - 4);
+  }
+
+  // Round headers
+  ctx.fillStyle = "#000";
+  ctx.font = fontLabel;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  for (let i = 0; i < roundIds.length; i++) ctx.fillText(roundIds[i], xCols[i] + colTextW / 2, 78);
+  ctx.fillText("CHAMP", xChamp + colTextW / 2, 78);
+
+  // Bracket structure comes from the canonical initial bracket (same seeds/matchups as the app)
+  const run = { bracket: buildInitialBracket() };
+  const rounds = run?.bracket?.rounds || {};
+
+  // Draw full bracket; populate ONLY R1 entries
+  for (let r = 0; r < roundIds.length; r++) {
+    const rid = roundIds[r];
+    const matches = rounds[rid] || [];
+    const entryYs = yEntries[r];
+    const xText = xCols[r];
+    const joinX = xText + colTextW + connW;
+    const nameStartX = xText - linePad;
+
+    const nextNameStartX = (r < roundIds.length - 1)
+      ? (xCols[r + 1] - linePad)
+      : (xChamp - linePad);
+
+    const matchCount = entryYs.length / 2;
+
+    for (let m = 0; m < matchCount; m++) {
+      const yA = entryYs[m * 2];
+      const yB = entryYs[m * 2 + 1];
+      const yMid = (yA + yB) / 2;
+
+      // Bracket lines
+      drawLine(nameStartX, yA, joinX, yA);
+      drawLine(nameStartX, yB, joinX, yB);
+      drawLine(joinX, yA, joinX, yB);
+      drawLine(joinX, yMid, nextNameStartX, yMid);
+
+      // R1 labels only
+      if (r === 0) {
+        const mm = matches[m];
+        if (mm) {
+          drawR1EntryText(xText, yA, mm.a || null);
+          drawR1EntryText(xText, yB, mm.b || null);
+        }
+      }
+    }
+  }
+
+  // Champion line (blank)
+  const yChamp = (yEntries[4][0] + yEntries[4][1]) / 2;
+  drawLine(xChamp - linePad, yChamp, xChamp + colTextW, yChamp);
+
+  return canvas.toDataURL("image/png");
+}
+
 
 function buildBracketUpdateImage(run, bgImg) {
   // Single, left-to-right 32-attraction bracket image
