@@ -831,7 +831,7 @@ async function openStartingBracketDialog() {
   try {
     // Starting bracket does not depend on an active run.
     let bgImg = null;
-    try { bgImg = await loadImage("mkpark15.jpg"); } catch (e) { bgImg = null; }
+    try { bgImg = await loadImage("mkpark15.jpg"); } catch { bgImg = null; }
 
     const dataUrl = buildStartingBracketImage(bgImg);
 
@@ -843,47 +843,47 @@ async function openStartingBracketDialog() {
           <img src="${dataUrl}" alt="Starting bracket" style="max-width:100%; border-radius:16px; border:1px solid rgba(0,0,0,.15);" />
         </div>
       `,
-      
-buttons: [
-  {
-    text: "Share",
-    className: "btn btnPrimary",
-    action: async () => {
-      try {
-        const blob = await (await fetch(dataUrl)).blob();
-        const file = new File([blob], "ER_March_Magic_starting_bracket.png", { type: "image/png" });
+      buttons: [
+        {
+          text: "Share",
+          className: "btn btnPrimary",
+          action: async () => {
+            try {
+              const blob = await (await fetch(dataUrl)).blob();
+              const file = new File([blob], "ER_March_Magic_starting_bracket.png", { type: "image/png" });
 
-        const canShare =
-          !!(navigator.share && navigator.canShare && navigator.canShare({ files: [file] }));
+              const canShare =
+                !!(navigator.share && navigator.canShare && navigator.canShare({ files: [file] }));
 
-        if (!canShare) {
-          showToast("Sharing isn't available on this device.");
-          return;
-        }
+              if (!canShare) {
+                showToast("Sharing isn't available on this device.");
+                return;
+              }
 
-        await navigator.share({
-          files: [file],
-          title: "ER March Magic - Starting Bracket"
-        });
-      } catch {
-        // cancelled or failed
-      }
-    }
-  },
-  {
-    text: "Download",
-    className: "btn",
-    action: () => {
-      const a = document.createElement("a");
-      a.href = dataUrl;
-      a.download = "ER_March_Magic_starting_bracket.png";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-    }
-  },
-  { text: "Close", className: "btn", action: () => closeDialog() }
-]
+              await navigator.share({
+                files: [file],
+                title: "ER March Magic - Starting Bracket"
+              });
+            } catch {
+              // cancelled or failed
+            }
+          }
+        },
+        {
+          text: "Download",
+          className: "btn",
+          action: () => {
+            const a = document.createElement("a");
+            a.href = dataUrl;
+            a.download = "ER_March_Magic_starting_bracket.png";
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+          }
+        },
+        { text: "Close", className: "btn", action: () => closeDialog() }
+      ]
+    });
   } catch (e) {
     console.error(e);
     showToast("Could not build starting bracket.");
