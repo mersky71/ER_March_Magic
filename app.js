@@ -74,13 +74,17 @@ async function init() {
 }
 
 function setHeaderEnabled(enabled) {
-  moreBtn.disabled = !enabled;
-  counterPill.style.display = enabled ? "inline-flex" : "none";
-  moreBtn.style.display = enabled ? "inline-flex" : "none";
-  if (!enabled) roundBar.innerHTML = "";
+  if (moreBtn) {
+    moreBtn.disabled = !enabled;
+    moreBtn.style.display = enabled ? "inline-flex" : "none";
+  }
+  if (counterPill) counterPill.style.display = enabled ? "inline-flex" : "none";
+  if (!enabled && roundBar) roundBar.innerHTML = "";
 }
 
 function setupMoreMenu() {
+  if (!moreBtn || !moreMenu) return;
+
   moreBtn.addEventListener("click", (e) => {
     if (moreBtn.disabled) return;
     e.stopPropagation();
@@ -94,19 +98,19 @@ function setupMoreMenu() {
     moreMenu.setAttribute("aria-hidden", "true");
   });
 
-  shareUpdateMenuBtn.addEventListener("click", () => {
+  shareUpdateMenuBtn?.addEventListener("click", () => {
     closeMore();
     if (!active) return;
     openBracketImageDialog().catch(() => {});
 });
 
-  settingsMenuBtn.addEventListener("click", () => {
+  settingsMenuBtn?.addEventListener("click", () => {
     closeMore();
     if (!active) return;
     openSettingsDialog();
   });
 
-  endToStartBtn.addEventListener("click", () => {
+  endToStartBtn?.addEventListener("click", () => {
     closeMore();
     if (!active) return;
     openConfirmDialog({
