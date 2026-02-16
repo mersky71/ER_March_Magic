@@ -1119,10 +1119,18 @@ function buildStartingBracketImage(bgImg, qrAppImg, qrDonateImg) {
   for (let i = 0; i < roundIds.length; i++) {
     const tw = (i === 0) ? colTextW_R1 : colTextW;
     ctx.fillText(roundIds[i], xCols[i] + tw / 2, 78);
+
+    // Points multiplier labels (starting bracket only)
+    if (i >= 1) {
+      const mult = i + 1; // R2->2, R3->3, R4->4, R5->5
+      ctx.font = "700 14px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+      ctx.fillText(`(Points x${mult})`, xCols[i] + tw / 2, 102);
+      ctx.font = fontLabel;
+    }
   }
   ctx.fillText("CHAMP", xChamp + colTextW / 2, 78);
 
-  // Bracket structure comes from the canonical initial bracket (same seeds/matchups as the app)
+// Bracket structure comes from the canonical initial bracket (same seeds/matchups as the app)
   const run = { bracket: buildInitialBracket() };
   const rounds = run?.bracket?.rounds || {};
 
@@ -1261,7 +1269,7 @@ function buildStartingBracketImage(bgImg, qrAppImg, qrDonateImg) {
 
   // Backing so black text is readable on the map
   ctx.save();
-  ctx.globalAlpha = 0.88;
+  ctx.globalAlpha = 0.25;
   ctx.fillStyle = "#ffffff";
   roundRect(boxX, boxY, boxW, boxH, 18);
   ctx.fill();
@@ -1355,16 +1363,20 @@ function buildStartingBracketImage(bgImg, qrAppImg, qrDonateImg) {
     "A multi-experience (anytime) pass must be used for its original ride"
   ]);
 
-  // ---- Footnote block (bottom center) ----
+  // ---- Footnote block (bottom center-right, spanning R4 + R5) ----
   const footText = "Main St Entertainment: Each of these can be done once:  1) Main St Vehicles, 2) Dapper Dans (watch 5 min), 3) Festival of Fantasy Parade, 4) Starlight Parade, 5) Happily Ever After. Take selfies at beginning and end of each";
-  const footAreaW = boxX - 90; // left-side area up to champ column
-  const footW = Math.min(footAreaW, 1250);
-  const footX = 60 + Math.floor((footAreaW - footW) / 2);
-  const footH = 120;
-  const footY = H - footH - 34;
+
+  // Span the R4 + R5 region (left of the CHAMP/rules column)
+  const footPadOuter = 10;
+  const footX = xCols[3] - linePad;                 // start at R4 column
+  const footW = (xChamp - footX) - footPadOuter;    // through R5, stopping before CHAMP column
+
+  // Place it in the open area below the bracket, above the bottom margin
+  const footH = 92;                                  // tuned to fit 3 lines at 18px
+  const footY = H - footH - 72;
 
   ctx.save();
-  ctx.globalAlpha = 0.88;
+  ctx.globalAlpha = 0.25;
   ctx.fillStyle = "#ffffff";
   roundRect(footX, footY, footW, footH, 18);
   ctx.fill();
@@ -1381,17 +1393,17 @@ function buildStartingBracketImage(bgImg, qrAppImg, qrDonateImg) {
   ctx.fillStyle = "#000";
   ctx.textAlign = "left";
   ctx.textBaseline = "top";
-  const footPad = 18;
+  const footPad = 16;
   const footFont = "800 18px system-ui, -apple-system, Segoe UI, Roboto, Arial";
   const footLines = wrapLines(footText, footW - footPad * 2, footFont);
   ctx.font = footFont;
   let fy = footY + footPad;
-  for (const line of footLines.slice(0, 4)) {
+  for (const line of footLines.slice(0, 3)) {
     ctx.fillText(line, footX + footPad, fy);
     fy += 22;
   }
 
-  return canvas.toDataURL("image/png");
+return canvas.toDataURL("image/png");
 }
 
 
