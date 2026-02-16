@@ -532,6 +532,7 @@ function renderMatchCard(roundId, m, idx) {
   const bLoser = decided && m.loser === m.b;
 
   const advLabel = decided ? `${shortNameFor(m.winner)} (${pointsForWinnerFromMatch(roundId, m)})` : "—";
+  const advStyle = decided && isTightLabelRide(m.winner) ? "font-size:12px;" : "";
   const winnerLand = decided ? (ridesById.get(m.winner)?.land || "TL") : "TL";
 
   return `
@@ -544,19 +545,19 @@ function renderMatchCard(roundId, m, idx) {
         <div class="pickRow">
           <button class="pickBtn ${aWinner ? "isWinner" : ""} ${aLoser ? "isLoser" : ""}"
             type="button" data-round="${roundId}" data-match="${m.id}" data-pick="${m.a}" data-land="${escapeHtml(ridesById.get(m.a)?.land || "TL")}">
-            <span>${escapeHtml(shortNameFor(m.a))} (${pointsA} pts)</span>
+            <span style="${isTightLabelRide(m.a) ? 'font-size:12px;' : ''}">${escapeHtml(shortNameFor(m.a))} (${pointsA} pts)</span>
           </button>
 
           <button class="pickBtn ${bWinner ? "isWinner" : ""} ${bLoser ? "isLoser" : ""}"
             type="button" data-round="${roundId}" data-match="${m.id}" data-pick="${m.b}" data-land="${escapeHtml(ridesById.get(m.b)?.land || "TL")}">
-            <span>${escapeHtml(shortNameFor(m.b))} (${pointsB} pts)</span>
+            <span style="${isTightLabelRide(m.b) ? 'font-size:12px;' : ''}">${escapeHtml(shortNameFor(m.b))} (${pointsB} pts)</span>
           </button>
         </div>
 
         <div class="afterRow">
           ${decided ? `
             <div>
-              <div class="advancePill pickBtn winner" data-land="${escapeHtml(winnerLand)}">${escapeHtml(advLabel)}</div>
+              <div class="advancePill pickBtn winner" style="${advStyle}" data-land="${escapeHtml(winnerLand)}">${escapeHtml(advLabel)}</div>
               <div class="smallText">${escapeHtml(completedLine)}</div>
             </div>
             <button class="smallBtn" type="button" data-round="${roundId}" data-undo="${m.id}">Undo</button>
@@ -597,6 +598,11 @@ function shortNameFor(rideId) {
   return ridesById.get(rideId)?.shortName || ridesById.get(rideId)?.name || rideId;
 }
 
+
+
+function isTightLabelRide(rideId) {
+  return rideId === "Belle" || rideId === "Fairyt. Hall";
+}
 function pointsForRideInRound(ride, roundMeta) {
   const base = Number(ride?.basePoints ?? 10);
   const mult = Number(roundMeta?.multiplier ?? 1);
@@ -1099,7 +1105,7 @@ function buildStartingBracketImage(bgImg, qrAppImg, qrDonateImg) {
     const pts = pointsForRideInRound(ridesById.get(id), roundMetaR1);
     const text = `${base} (${pts} pts)`;
     ctx.fillStyle = "#000";
-    ctx.font = fontEntry;
+    ctx.font = isTightLabelRide(id) ? "700 20px system-ui, -apple-system, Segoe UI, Roboto, Arial" : fontEntry;
     ctx.textAlign = "left";
     ctx.textBaseline = "bottom";
     ctx.fillText(text, x, y - 4);
@@ -1214,7 +1220,7 @@ function buildStartingBracketImage(bgImg, qrAppImg, qrDonateImg) {
   // Backing so they stay scannable over the map
   const qrPad = 14;
   ctx.save();
-  ctx.globalAlpha = 0.82;
+  ctx.globalAlpha = 0.90;
   ctx.fillStyle = "#ffffff";
   roundRect(qrX1 - qrPad, qrY - qrPad, qrTotalW + qrPad * 2, qrSize + 92, 18);
   ctx.fill();
@@ -1255,7 +1261,7 @@ function buildStartingBracketImage(bgImg, qrAppImg, qrDonateImg) {
 
   // Backing so black text is readable on the map
   ctx.save();
-  ctx.globalAlpha = 0.78;
+  ctx.globalAlpha = 0.88;
   ctx.fillStyle = "#ffffff";
   roundRect(boxX, boxY, boxW, boxH, 18);
   ctx.fill();
@@ -1348,6 +1354,42 @@ function buildStartingBracketImage(bgImg, qrAppImg, qrDonateImg) {
     "LL Premier Pass, VIP tours, etc. are not allowed!",
     "A multi-experience (anytime) pass must be used for its original ride"
   ]);
+
+  // ---- Footnote block (bottom center) ----
+  const footText = "Main St Entertainment: Each of these can be done once:  1) Main St Vehicles, 2) Dapper Dans (watch 5 min), 3) Festival of Fantasy Parade, 4) Starlight Parade, 5) Happily Ever After. Take selfies at beginning and end of each";
+  const footAreaW = boxX - 90; // left-side area up to champ column
+  const footW = Math.min(footAreaW, 1250);
+  const footX = 60 + Math.floor((footAreaW - footW) / 2);
+  const footH = 120;
+  const footY = H - footH - 34;
+
+  ctx.save();
+  ctx.globalAlpha = 0.88;
+  ctx.fillStyle = "#ffffff";
+  roundRect(footX, footY, footW, footH, 18);
+  ctx.fill();
+  ctx.restore();
+
+  ctx.save();
+  ctx.globalAlpha = 0.25;
+  ctx.strokeStyle = "#000000";
+  ctx.lineWidth = 2;
+  roundRect(footX, footY, footW, footH, 18);
+  ctx.stroke();
+  ctx.restore();
+
+  ctx.fillStyle = "#000";
+  ctx.textAlign = "left";
+  ctx.textBaseline = "top";
+  const footPad = 18;
+  const footFont = "800 18px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  const footLines = wrapLines(footText, footW - footPad * 2, footFont);
+  ctx.font = footFont;
+  let fy = footY + footPad;
+  for (const line of footLines.slice(0, 4)) {
+    ctx.fillText(line, footX + footPad, fy);
+    fy += 22;
+  }
 
   return canvas.toDataURL("image/png");
 }
@@ -1549,7 +1591,7 @@ const yBase = Array.from({ length: teams }, (_, i) => {
     const text = (isWinner && pts) ? `${base} (${pts})` : base;
 
     ctx.fillStyle = decided ? (isWinner ? "#16a34a" : "#dc2626") : "rgba(17,24,39,.80)";
-    ctx.font = fontEntry;
+    ctx.font = isTightLabelRide(id) ? "700 18px system-ui, -apple-system, Segoe UI, Roboto, Arial" : fontEntry;
     ctx.textAlign = "left";
     ctx.textBaseline = "bottom";
     const textOffset = 4;
