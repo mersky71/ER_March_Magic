@@ -74,17 +74,13 @@ async function init() {
 }
 
 function setHeaderEnabled(enabled) {
-  if (moreBtn) {
-    moreBtn.disabled = !enabled;
-    moreBtn.style.display = enabled ? "inline-flex" : "none";
-  }
-  if (counterPill) counterPill.style.display = enabled ? "inline-flex" : "none";
-  if (!enabled && roundBar) roundBar.innerHTML = "";
+  moreBtn.disabled = !enabled;
+  counterPill.style.display = enabled ? "inline-flex" : "none";
+  moreBtn.style.display = enabled ? "inline-flex" : "none";
+  if (!enabled) roundBar.innerHTML = "";
 }
 
 function setupMoreMenu() {
-  if (!moreBtn || !moreMenu) return;
-
   moreBtn.addEventListener("click", (e) => {
     if (moreBtn.disabled) return;
     e.stopPropagation();
@@ -98,19 +94,19 @@ function setupMoreMenu() {
     moreMenu.setAttribute("aria-hidden", "true");
   });
 
-  shareUpdateMenuBtn?.addEventListener("click", () => {
+  shareUpdateMenuBtn.addEventListener("click", () => {
     closeMore();
     if (!active) return;
     openBracketImageDialog().catch(() => {});
 });
 
-  settingsMenuBtn?.addEventListener("click", () => {
+  settingsMenuBtn.addEventListener("click", () => {
     closeMore();
     if (!active) return;
     openSettingsDialog();
   });
 
-  endToStartBtn?.addEventListener("click", () => {
+  endToStartBtn.addEventListener("click", () => {
     closeMore();
     if (!active) return;
     openConfirmDialog({
@@ -229,11 +225,23 @@ function renderStartPage() {
   });
 
   document.getElementById("bracketBtn")?.addEventListener("click", () => {
-    openStartingBracketDialog().catch(() => {});
+    openDialog({
+      title: "Bracket",
+      body: "Bracket view coming next (and will support printing).",
+      buttons: [{ text: "Close", className: "btn btnPrimary", action: () => closeDialog() }]
+    });
   });
 
   document.getElementById("rulesBtn")?.addEventListener("click", () => {
-    openRulesDialog();
+    openDialog({
+      title: "Rules",
+      body: "",
+      content: `<div class="card" style="border:1px solid rgba(17,24,39,.12);">
+        <div style="font-weight:900; margin-bottom:6px;">(Placeholder)</div>
+        <div class="p">We\'ll put the official ER March Magic Bracket Challenge rules here.</div>
+      </div>`,
+      buttons: [{ text: "Close", className: "btn btnPrimary", action: () => closeDialog() }]
+    });
   });
 
   document.getElementById("historyBtn")?.addEventListener("click", () => openHistoryDialog());
@@ -827,117 +835,6 @@ function loadImage(src) {
     img.src = src;
   });
 }
-async function openStartingBracketDialog() {
-  try {
-    // Starting bracket does not depend on an active run.
-    let bgImg = null;
-    let qrAppImg = null;
-    let qrDonateImg = null;
-
-    try { bgImg = await loadImage("mkpark15.jpg"); } catch { bgImg = null; }
-    try { qrAppImg = await loadImage("mersky_app.png"); } catch { qrAppImg = null; }
-    try { qrDonateImg = await loadImage("ER_donation.png"); } catch { qrDonateImg = null; }
-
-    const dataUrl = buildStartingBracketImage(bgImg, qrAppImg, qrDonateImg);
-
-    openDialog({
-      title: "Every Ride March Magic",
-      body: "",
-      content: `
-        <div style="display:flex; justify-content:center;">
-          <img src="${dataUrl}" alt="Every Ride March Magic bracket" style="max-width:100%; border-radius:16px; border:1px solid rgba(0,0,0,.15);" />
-        </div>
-      `,
-      buttons: [
-        {
-          text: "Share",
-          className: "btn btnPrimary",
-          action: async () => {
-            try {
-              const blob = await (await fetch(dataUrl)).blob();
-              const file = new File([blob], "ER_March_Magic_starting_bracket.png", { type: "image/png" });
-
-              const canShare =
-                !!(navigator.share && navigator.canShare && navigator.canShare({ files: [file] }));
-
-              if (!canShare) {
-                showToast("Sharing isn't available on this device.");
-                return;
-              }
-
-              await navigator.share({
-                files: [file],
-                title: "Every Ride March Magic"
-              });
-            } catch {
-              // cancelled or failed
-            }
-          }
-        },
-        {
-          text: "Download",
-          className: "btn",
-          action: () => {
-            const a = document.createElement("a");
-            a.href = dataUrl;
-            a.download = "ER_March_Magic_starting_bracket.png";
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-          }
-        },
-        { text: "Close", className: "btn", action: () => closeDialog() }
-      ]
-    });
-  } catch (e) {
-    console.error(e);
-    showToast("Could not build starting bracket.");
-  }
-}
-
-function openRulesDialog() {
-  openDialog({
-    title: "Rules",
-    body: "",
-    content: `
-      <div style="max-height:70vh; overflow:auto; padding-right:2px; line-height:1.35;">
-        <div style="font-weight:900; font-size:16px; margin-top:2px;">The Challenge</div>
-        <ul style="margin:8px 0 14px 18px;">
-          <li>A new challenge from the Every Ride Challenge team!</li>
-          <li>March Magic is a 32-attraction bracket-style event - complete attractions to advance them to the next round. Which ride will win your bracket?!</li>
-          <li>Earn points, try to score the most!</li>
-        </ul>
-
-        <div style="font-weight:900; font-size:16px; margin-top:2px;">Required Elements</div>
-        <ul style="margin:8px 0 14px 18px;">
-          <li>Take a selfie while in the ride vehicle (or show seat or with character) and tweet with hashtags @ERMarchMagic and tag @rideevery for credit for each</li>
-          <li>If you use a LL, include screenshot showing ride and your name in the tweet</li>
-          <li>An attraction can advance to the next round only if it has an “opponent” (no riding Space Mountain as your first 2 rides to advance it to Round 3)</li>
-          <li>For attractions where you could “hop off,” include proof you experienced the attraction (mid-ride/show video or photo)</li>
-        </ul>
-
-        <div style="font-weight:900; font-size:16px; margin-top:2px;">Strongly Encouraged</div>
-        <ul style="margin:8px 0 14px 18px;">
-          <li>Use a time stamp camera to help out the official scorers</li>
-          <li>Use the app to draft your tweets and track your run <span style="color:#6b7280;">[add link]</span></li>
-          <li>Create a fundraising page to support Give Kids the World Village and include the link in your tweets <span style="color:#6b7280;">[add link]</span>. Share to family and friends!</li>
-          <li>Meet in the Hub at end of night for group photo!</li>
-        </ul>
-
-        <div style="font-weight:900; font-size:16px; margin-top:2px;">Other considerations</div>
-        <ul style="margin:8px 0 0 18px;">
-          <li>Points in later rounds: Round 1 points multiplied by round number</li>
-          <li>No Early Entry - start at regular opening time</li>
-          <li>LL Multi Pass and LL Single Pass are allowed; no LLs carried over from a previous day</li>
-          <li>A multi-experience (anytime) pass must be used for its original ride</li>
-          <li><span style="color:#6b7280;">[Any restrictions on doing later rounds before earlier?]</span></li>
-        </ul>
-      </div>
-    `,
-    buttons: [{ text: "Close", className: "btn btnPrimary", action: () => closeDialog() }]
-  });
-}
-
 async function openBracketImageDialog() {
   try {
     // Make sure downstream rounds are synced so later-round slots populate when ready.
@@ -976,364 +873,6 @@ async function openBracketImageDialog() {
     showToast("Could not build bracket image.");
   }
 }
-
-function buildStartingBracketImage(bgImg, qrAppImg, qrDonateImg) {
-  // Printable starting bracket: 32 teams in R1 only, full bracket lines through CHAMP.
-  const W = 2200;
-  const H = 1600;
-
-  const canvas = document.createElement("canvas");
-  canvas.width = W;
-  canvas.height = H;
-  const ctx = canvas.getContext("2d");
-
-  // Background (cover crop)
-  ctx.fillStyle = "#ffffff";
-  ctx.fillRect(0, 0, W, H);
-  if (bgImg) {
-    const iw = bgImg.naturalWidth || bgImg.width;
-    const ih = bgImg.naturalHeight || bgImg.height;
-    const scale = Math.max(W / iw, H / ih);
-    const sw = W / scale;
-    const sh = H / scale;
-    const sx = (iw - sw) / 2;
-    const sy = (ih - sh) / 2;
-    try { ctx.drawImage(bgImg, sx, sy, sw, sh, 0, 0, W, H); } catch (e) { /* ignore */ }
-  }
-
-  // Title + headers (match update image style)
-  ctx.fillStyle = "#000";
-  ctx.font = "900 34px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillText("ER March Magic Bracket Challenge", W / 2, 42);
-
-  // Geometry
-  const marginTop = 160;
-  const marginBottom = 80;
-  const usableH = H - marginTop - marginBottom;
-
-  const teams = 32;
-  const matchups = teams / 2;
-  const matchGapFactor = 0.5;
-  const halfGapFactor = 1.0;
-  const totalUnits = (teams - 1) + matchGapFactor * (matchups - 1) + halfGapFactor;
-  const teamStep = usableH / totalUnits;
-
-  const yBase = Array.from({ length: teams }, (_, i) => {
-    const matchGap = Math.floor(i / 2) * (matchGapFactor * teamStep);
-    const halfGap = (i >= 16) ? (halfGapFactor * teamStep) : 0;
-    return marginTop + (i * teamStep) + matchGap + halfGap;
-  });
-
-  function pairCenters(arr) {
-    const out = [];
-    for (let i = 0; i < arr.length; i += 2) out.push((arr[i] + arr[i + 1]) / 2);
-    return out;
-  }
-  const yEntries = [
-    yBase,
-    pairCenters(yBase),
-    pairCenters(pairCenters(yBase)),
-    pairCenters(pairCenters(pairCenters(yBase))),
-    pairCenters(pairCenters(pairCenters(pairCenters(yBase))))
-  ];
-
-  // Columns (R1 is wider; later rounds keep original width but shift right accordingly)
-  const x0 = 70;
-
-  const colTextW = 210;                 // R2+ text column width (original)
-  const colTextW_R1 = Math.round(colTextW * 1.25); // R1 only (+25%)
-
-  const connW = 25;
-  const colGap = 15;
-  const linePad = 10;
-
-  const roundIds = ["R1", "R2", "R3", "R4", "R5"];
-  const xCols = [x0];
-
-  // R2 starts after the widened R1 column
-  xCols.push(xCols[0] + colTextW_R1 + connW + colGap);
-
-  // R3+ use original width
-  for (let i = 2; i < roundIds.length; i++) xCols.push(xCols[i - 1] + colTextW + connW + colGap);
-
-  const xChamp = xCols[xCols.length - 1] + colTextW + connW + colGap;
-
-  // Typography
-  const fontEntry = "700 24px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-  const fontLabel = "800 18px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-
-  // Helpers
-  function seedOf(id) {
-    const r = ridesById.get(id);
-    return r?.seed ?? "";
-  }
-  function labelFor(id) {
-    if (!id) return "";
-    const rawSeed = seedOf(id);
-    const s = shortNameFor(id);
-    const seedStr0 = (rawSeed === null || rawSeed === undefined) ? "" : String(rawSeed).trim();
-    if (!seedStr0) return s;
-    const before = (seedStr0.length === 1) ? "  " : "";
-    const after = "  ";
-    return `${before}${seedStr0}${after}${s}`;
-  }
-  const roundMetaR1 = ROUNDS.find(r => r.id === "R1") || ROUNDS[0];
-
-  // Drawing primitives
-  ctx.strokeStyle = "rgba(17,24,39,.22)";
-  ctx.lineWidth = 2;
-
-  function drawLine(x1, y1, x2, y2) {
-    ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x2, y2);
-    ctx.stroke();
-  }
-
-  function drawR1EntryText(x, y, id) {
-    if (!id) return;
-    const base = labelFor(id);
-    const pts = pointsForRideInRound(ridesById.get(id), roundMetaR1);
-    const text = `${base} (${pts} pts)`;
-    ctx.fillStyle = "#000";
-    ctx.font = fontEntry;
-    ctx.textAlign = "left";
-    ctx.textBaseline = "bottom";
-    ctx.fillText(text, x, y - 4);
-  }
-
-  // Round headers
-  ctx.fillStyle = "#000";
-  ctx.font = fontLabel;
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  for (let i = 0; i < roundIds.length; i++) {
-    const tw = (i === 0) ? colTextW_R1 : colTextW;
-    ctx.fillText(roundIds[i], xCols[i] + tw / 2, 78);
-  }
-  ctx.fillText("CHAMP", xChamp + colTextW / 2, 78);
-
-  // Bracket structure comes from the canonical initial bracket (same seeds/matchups as the app)
-  const run = { bracket: buildInitialBracket() };
-  const rounds = run?.bracket?.rounds || {};
-
-  // Draw full bracket; populate ONLY R1 entries
-  for (let r = 0; r < roundIds.length; r++) {
-    const rid = roundIds[r];
-    const matches = rounds[rid] || [];
-    const entryYs = yEntries[r];
-    const xText = xCols[r];
-    const tw = (r === 0) ? colTextW_R1 : colTextW;
-    const joinX = xText + tw + connW;
-    const nameStartX = xText - linePad;
-
-    const nextNameStartX = (r < roundIds.length - 1)
-      ? (xCols[r + 1] - linePad)
-      : (xChamp - linePad);
-
-    const matchCount = entryYs.length / 2;
-
-    for (let m = 0; m < matchCount; m++) {
-      const yA = entryYs[m * 2];
-      const yB = entryYs[m * 2 + 1];
-      const yMid = (yA + yB) / 2;
-
-      // Bracket lines
-      drawLine(nameStartX, yA, joinX, yA);
-      drawLine(nameStartX, yB, joinX, yB);
-      drawLine(joinX, yA, joinX, yB);
-      drawLine(joinX, yMid, nextNameStartX, yMid);
-
-      // R1 labels only
-      if (r === 0) {
-        const mm = matches[m];
-        if (mm) {
-          drawR1EntryText(xText, yA, mm.a || null);
-          drawR1EntryText(xText, yB, mm.b || null);
-        }
-      }
-    }
-  }
-
-  // Champion line (blank)
-  const yChamp = (yEntries[4][0] + yEntries[4][1]) / 2;
-  drawLine(xChamp - linePad, yChamp, xChamp + colTextW, yChamp);
-
-  // ---- Rules block (lower-right) ----
-  // Left edge starts at the CHAMP column so we can use the open space to the right.
-  const boxX = xChamp;                    // CHAMP column start
-  const boxY = Math.round(H * 0.56);
-  const boxW = W - boxX - 60;
-  const boxH = H - boxY - 60;
-
-  function roundRect(x, y, w, h, r) {
-    const rr = Math.min(r, w / 2, h / 2);
-    ctx.beginPath();
-    ctx.moveTo(x + rr, y);
-    ctx.arcTo(x + w, y, x + w, y + h, rr);
-    ctx.arcTo(x + w, y + h, x, y + h, rr);
-    ctx.arcTo(x, y + h, x, y, rr);
-    ctx.arcTo(x, y, x + w, y, rr);
-    ctx.closePath();
-  }
-
-  // Text wrapping helper
-  function wrapLines(text, maxWidth, font) {
-    ctx.font = font;
-    const words = String(text).split(/\s+/).filter(Boolean);
-    const lines = [];
-    let line = "";
-    for (const w of words) {
-      const test = line ? (line + " " + w) : w;
-      if (ctx.measureText(test).width <= maxWidth) {
-        line = test;
-      } else {
-        if (line) lines.push(line);
-        line = w;
-      }
-    }
-    if (line) lines.push(line);
-    return lines;
-  }
-
-  // ---- QR codes (upper-right) ----
-  // Total width of both QR codes must not exceed the rules box width.
-  const qrGap = 26;
-  const qrTarget = 280;
-  const qrSize = Math.max(140, Math.min(qrTarget, Math.floor((boxW - qrGap) / 2)));
-  const qrTotalW = qrSize * 2 + qrGap;
-
-  // Place them in the open space at the upper-right, aligned within the rules region.
-  const qrX1 = boxX + Math.floor((boxW - qrTotalW) / 2);
-  const qrY = 120;
-  const qrX2 = qrX1 + qrSize + qrGap;
-
-  // Backing so they stay scannable over the map
-  const qrPad = 14;
-  ctx.save();
-  ctx.globalAlpha = 0.9;
-  ctx.fillStyle = "#ffffff";
-  roundRect(qrX1 - qrPad, qrY - qrPad, qrTotalW + qrPad * 2, qrSize + 92, 18);
-  ctx.fill();
-  ctx.restore();
-
-  // Draw images if present
-  try { if (qrAppImg) ctx.drawImage(qrAppImg, qrX1, qrY, qrSize, qrSize); } catch {}
-  try { if (qrDonateImg) ctx.drawImage(qrDonateImg, qrX2, qrY, qrSize, qrSize); } catch {}
-
-  // Labels under each QR
-  const labelFont = "800 18px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-  ctx.fillStyle = "#000";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "top";
-  const labelMaxW = qrSize;
-  const labelY = qrY + qrSize + 12;
-
-  function drawLabel(centerX, text) {
-    const lines = wrapLines(text, labelMaxW, labelFont);
-    ctx.font = labelFont;
-    let yy = labelY;
-    for (const line of lines.slice(0, 3)) {
-      ctx.fillText(line, centerX, yy);
-      yy += 22;
-    }
-  }
-
-  drawLabel(qrX1 + qrSize / 2, "Use this web app to track your run and generate your tweets!");
-  drawLabel(qrX2 + qrSize / 2, "Make your fundraising page here!");
-
-  // Backing so black text is readable on the map
-  ctx.save();
-  ctx.globalAlpha = 0.88;
-  ctx.fillStyle = "#ffffff";
-  roundRect(boxX, boxY, boxW, boxH, 18);
-  ctx.fill();
-  ctx.restore();
-
-  const pad = 26;
-  let x = boxX + pad;
-  let y = boxY + pad;
-
-  const fontTitle = "900 30px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-  const fontH = "900 22px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-  const fontB = "700 18px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-  const fontS = "700 17px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-  const maxTextW = boxW - pad * 2;
-
-  // Centered title
-  ctx.fillStyle = "#000";
-  ctx.font = fontTitle;
-  ctx.textAlign = "center";
-  ctx.textBaseline = "top";
-  ctx.fillText("Rules", boxX + boxW / 2, y);
-  y += 40;
-
-
-  function drawHeader(t) {
-    ctx.fillStyle = "#000";
-    ctx.textAlign = "left";
-    ctx.textBaseline = "top";
-    ctx.font = fontH;
-    ctx.fillText(t, x, y);
-    y += 28;
-  }
-
-  function drawBullets(items) {
-    for (const item of items) {
-      const bullet = "•";
-      ctx.font = fontB;
-      const lines = wrapLines(item, maxTextW - 18, fontB);
-      ctx.fillStyle = "#000";
-      ctx.fillText(bullet, x, y);
-      let yy = y;
-      for (let i = 0; i < lines.length; i++) {
-        ctx.fillText(lines[i], x + 18, yy);
-        yy += 19;
-      }
-      y = yy + 4;
-      // stop if we're running out of vertical space
-      if (y > boxY + boxH - 30) return;
-    }
-  }
-
-  drawHeader("The Challenge");
-  drawBullets([
-    "A new challenge from the Every Ride Challenge team!",
-    "March Magic is a 32-attraction bracket-style event — complete attractions to advance them to the next round.",
-    "Earn points, try to score the most!"
-  ]);
-
-  drawHeader("Required Elements");
-  drawBullets([
-    "Take a selfie while in the ride vehicle (or show seat/with character) and tweet with @ERMarchMagic and tag @rideevery for credit",
-    "If you use a LL, include a screenshot showing the ride and your name",
-    "An attraction can advance only if it has an opponent (no riding the same attraction twice to jump rounds)",
-    "For attractions where you could “hop off,” include proof you experienced the attraction (mid-ride/show photo or video)"
-  ]);
-
-  drawHeader("Strongly Encouraged");
-  drawBullets([
-    "Use a time stamp camera to help the official scorers",
-    "Use the app to draft your tweets and track your run [link]",
-    "Create a Give Kids the World fundraising page and include the link in your tweets [link]",
-    "Meet in the Hub at end of night for group photo!"
-  ]);
-
-  drawHeader("Other considerations");
-  ctx.font = fontS;
-  drawBullets([
-    "Points in later rounds: Round 1 points multiplied by round number",
-    "No Early Entry — start at regular opening time",
-    "LL Multi Pass and LL Single Pass are allowed; no LLs carried over from a previous day",
-    "A multi-experience (anytime) pass must be used for its original ride",
-    "[Any restrictions on doing later rounds before earlier?]"
-  ]);
-
-  return canvas.toDataURL("image/png");
-}
-
 
 function buildBracketUpdateImage(run, bgImg) {
   // Single, left-to-right 32-attraction bracket image
@@ -1603,8 +1142,7 @@ const rounds = (() => {
     const matches = rounds[rid] || [];
     const entryYs = yEntries[r]; // length = 32 / (2^r)
     const xText = xCols[r];
-    const tw = (r === 0) ? colTextW_R1 : colTextW;
-    const joinX = xText + tw + connW;
+    const joinX = xText + colTextW + connW;
     const nameStartX = xText - linePad;
 
     const nextNameStartX = (r < roundIds.length - 1)
