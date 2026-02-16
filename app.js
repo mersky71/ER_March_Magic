@@ -903,14 +903,14 @@ function openRulesDialog() {
       <div style="max-height:70vh; overflow:auto; padding-right:2px; line-height:1.35;">
         <div style="font-weight:900; font-size:16px; margin-top:2px;">The Challenge</div>
         <ul style="margin:8px 0 14px 18px;">
-          <li>A new challenge from the Every Ride Challenge team!</li>
+          <li>A new event from the Every Ride Challenge team!</li>
           <li>March Magic is a 32-attraction bracket-style event - complete attractions to advance them to the next round. Which ride will win your bracket?!</li>
           <li>Earn points, try to score the most!</li>
         </ul>
 
         <div style="font-weight:900; font-size:16px; margin-top:2px;">Required Elements</div>
         <ul style="margin:8px 0 14px 18px;">
-          <li>Take a selfie while in the ride vehicle (or show seat or with character) and tweet with hashtags @ERMarchMagic and tag @rideevery for credit for each</li>
+          <li>Take a selfie while in the ride vehicle (or show seat or with character) and tweet with hashtags #ERMarchMagic and tag @RideEvery for credit for each</li>
           <li>If you use a LL, include screenshot showing ride and your name in the tweet</li>
           <li>An attraction can advance to the next round only if it has an “opponent” (no riding Space Mountain as your first 2 rides to advance it to Round 3)</li>
           <li>For attractions where you could “hop off,” include proof you experienced the attraction (mid-ride/show video or photo)</li>
@@ -926,11 +926,12 @@ function openRulesDialog() {
 
         <div style="font-weight:900; font-size:16px; margin-top:2px;">Other considerations</div>
         <ul style="margin:8px 0 0 18px;">
-          <li>Points in later rounds: Round 1 points multiplied by round number</li>
-          <li>No Early Entry - start at regular opening time</li>
+          <li>Points in later rounds = Round 1 points multiplied by round number</li>
+          <li>No Early Entry (but okay to ride Main St Vehicles prior to park open)</li>
           <li>LL Multi Pass and LL Single Pass are allowed; no LLs carried over from a previous day</li>
+        <li>LL Premier Pass, VIP tours, etc. are not allowed!</li>
           <li>A multi-experience (anytime) pass must be used for its original ride</li>
-          <li><span style="color:#6b7280;">[Any restrictions on doing later rounds before earlier?]</span></li>
+          
         </ul>
       </div>
     `,
@@ -1213,10 +1214,18 @@ function buildStartingBracketImage(bgImg, qrAppImg, qrDonateImg) {
   // Backing so they stay scannable over the map
   const qrPad = 14;
   ctx.save();
-  ctx.globalAlpha = 0.9;
+  ctx.globalAlpha = 0.82;
   ctx.fillStyle = "#ffffff";
   roundRect(qrX1 - qrPad, qrY - qrPad, qrTotalW + qrPad * 2, qrSize + 92, 18);
   ctx.fill();
+  ctx.restore();
+
+  ctx.save();
+  ctx.globalAlpha = 0.25;
+  ctx.strokeStyle = "#000000";
+  ctx.lineWidth = 2;
+  roundRect(qrX1 - qrPad, qrY - qrPad, qrTotalW + qrPad * 2, qrSize + 92, 18);
+  ctx.stroke();
   ctx.restore();
 
   // Draw images if present
@@ -1246,10 +1255,19 @@ function buildStartingBracketImage(bgImg, qrAppImg, qrDonateImg) {
 
   // Backing so black text is readable on the map
   ctx.save();
-  ctx.globalAlpha = 0.88;
+  ctx.globalAlpha = 0.78;
   ctx.fillStyle = "#ffffff";
   roundRect(boxX, boxY, boxW, boxH, 18);
   ctx.fill();
+  ctx.restore();
+
+  // Subtle outline so the box edge is visible while still letting the map show through
+  ctx.save();
+  ctx.globalAlpha = 0.25;
+  ctx.strokeStyle = "#000000";
+  ctx.lineWidth = 2;
+  roundRect(boxX, boxY, boxW, boxH, 18);
+  ctx.stroke();
   ctx.restore();
 
   const pad = 26;
@@ -1300,35 +1318,35 @@ function buildStartingBracketImage(bgImg, qrAppImg, qrDonateImg) {
 
   drawHeader("The Challenge");
   drawBullets([
-    "A new challenge from the Every Ride Challenge team!",
-    "March Magic is a 32-attraction bracket-style event — complete attractions to advance them to the next round.",
+    "A new event from the Every Ride Challenge team!",
+    "March Magic is a 32-attraction bracket-style event — complete attractions to advance them to the next round. Which ride will win your bracket?!",
     "Earn points, try to score the most!"
   ]);
 
   drawHeader("Required Elements");
   drawBullets([
-    "Take a selfie while in the ride vehicle (or show seat/with character) and tweet with @ERMarchMagic and tag @rideevery for credit",
-    "If you use a LL, include a screenshot showing the ride and your name",
-    "An attraction can advance only if it has an opponent (no riding the same attraction twice to jump rounds)",
+    "Take a selfie while in the ride vehicle (or show seat/with character) and tweet with hashtags #ERMarchMagic and tag @RideEvery for credit for each",
+    "If you use a LL, include a screenshot showing the ride and your name in the tweet",
+    "An attraction can advance to the next round only if it has an opponent (no riding Space Mountain as your first 2 rides to advance it to Round 3)",
     "For attractions where you could “hop off,” include proof you experienced the attraction (mid-ride/show photo or video)"
   ]);
 
   drawHeader("Strongly Encouraged");
   drawBullets([
-    "Use a time stamp camera to help the official scorers",
-    "Use the app to draft your tweets and track your run [link]",
-    "Create a Give Kids the World fundraising page and include the link in your tweets [link]",
+    "Use a time stamp camera to help out the official scorers",
+    "Use the app to draft your tweets and track your run [add link]",
+    "Create a fundraising page to support Give Kids the World Village and include the link in your tweets [add link]. Share to family and friends!",
     "Meet in the Hub at end of night for group photo!"
   ]);
 
   drawHeader("Other considerations");
   ctx.font = fontS;
   drawBullets([
-    "Points in later rounds: Round 1 points multiplied by round number",
-    "No Early Entry — start at regular opening time",
+    "Points in later rounds = Round 1 points multiplied by round number",
+    "No Early Entry (but okay to ride Main St Vehicles prior to park open)",
     "LL Multi Pass and LL Single Pass are allowed; no LLs carried over from a previous day",
-    "A multi-experience (anytime) pass must be used for its original ride",
-    "[Any restrictions on doing later rounds before earlier?]"
+    "LL Premier Pass, VIP tours, etc. are not allowed!",
+    "A multi-experience (anytime) pass must be used for its original ride"
   ]);
 
   return canvas.toDataURL("image/png");
