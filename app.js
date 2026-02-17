@@ -1226,8 +1226,8 @@ function buildStartingBracketImage(bgImg, qrAppImg, qrDonateImg) {
   const qrTarget = 280;
   const qrPad = 14;
   const qrGapY = 28;
-  const qrLabelFont = "800 18px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-  const qrLabelLineH = 22;
+  const qrLabelFont = "800 20px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  const qrLabelLineH = 24;
   const qrLabelMaxLines = 3;
   const qrLabelH = qrLabelLineH * qrLabelMaxLines;
   const qrCardH = qrTarget + 12 + qrLabelH;
@@ -1247,7 +1247,7 @@ function buildStartingBracketImage(bgImg, qrAppImg, qrDonateImg) {
   // Rules box width: consume remaining right-side space after QR column.
   const rightAvailW = W - xChamp - sideMargin;
   const qrToRulesGap = 24;
-  const boxW = Math.max(520, rightAvailW - qrCardW - qrToRulesGap);
+  const boxW = 500;
   const boxX = W - sideMargin - boxW;
 
   // QR column x
@@ -1319,10 +1319,10 @@ function buildStartingBracketImage(bgImg, qrAppImg, qrDonateImg) {
   let x = boxX + pad;
   let y = boxY + pad;
 
-  const fontTitle = "900 30px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-  const fontH = "900 22px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-  const fontB = "700 18px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-  const fontS = "700 17px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  const fontTitle = "900 32px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  const fontH = "900 24px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  const fontB = "700 20px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  const fontS = "700 19px system-ui, -apple-system, Segoe UI, Roboto, Arial";
   const maxTextW = boxW - pad * 2;
 
   // Centered title
