@@ -532,7 +532,6 @@ function renderMatchCard(roundId, m, idx) {
   const bLoser = decided && m.loser === m.b;
 
   const advLabel = decided ? `${shortNameFor(m.winner)} (${pointsForWinnerFromMatch(roundId, m)})` : "—";
-  const advStyle = decided && isTightLabelRide(m.winner) ? "font-size:12px;" : "";
   const winnerLand = decided ? (ridesById.get(m.winner)?.land || "TL") : "TL";
 
   return `
@@ -545,19 +544,19 @@ function renderMatchCard(roundId, m, idx) {
         <div class="pickRow">
           <button class="pickBtn ${aWinner ? "isWinner" : ""} ${aLoser ? "isLoser" : ""}"
             type="button" data-round="${roundId}" data-match="${m.id}" data-pick="${m.a}" data-land="${escapeHtml(ridesById.get(m.a)?.land || "TL")}">
-            <span style="${isTightLabelRide(m.a) ? 'font-size:12px;' : ''}">${escapeHtml(shortNameFor(m.a))} (${pointsA} pts)</span>
+            <span>${escapeHtml(shortNameFor(m.a))} (${pointsA} pts)</span>
           </button>
 
           <button class="pickBtn ${bWinner ? "isWinner" : ""} ${bLoser ? "isLoser" : ""}"
             type="button" data-round="${roundId}" data-match="${m.id}" data-pick="${m.b}" data-land="${escapeHtml(ridesById.get(m.b)?.land || "TL")}">
-            <span style="${isTightLabelRide(m.b) ? 'font-size:12px;' : ''}">${escapeHtml(shortNameFor(m.b))} (${pointsB} pts)</span>
+            <span>${escapeHtml(shortNameFor(m.b))} (${pointsB} pts)</span>
           </button>
         </div>
 
         <div class="afterRow">
           ${decided ? `
             <div>
-              <div class="advancePill pickBtn winner" style="${advStyle}" data-land="${escapeHtml(winnerLand)}">${escapeHtml(advLabel)}</div>
+              <div class="advancePill pickBtn winner" data-land="${escapeHtml(winnerLand)}">${escapeHtml(advLabel)}</div>
               <div class="smallText">${escapeHtml(completedLine)}</div>
             </div>
             <button class="smallBtn" type="button" data-round="${roundId}" data-undo="${m.id}">Undo</button>
@@ -598,11 +597,6 @@ function shortNameFor(rideId) {
   return ridesById.get(rideId)?.shortName || ridesById.get(rideId)?.name || rideId;
 }
 
-
-
-function isTightLabelRide(rideId) {
-  return rideId === "Belle" || rideId === "Fairyt. Hall";
-}
 function pointsForRideInRound(ride, roundMeta) {
   const base = Number(ride?.basePoints ?? 10);
   const mult = Number(roundMeta?.multiplier ?? 1);
@@ -933,7 +927,6 @@ function openRulesDialog() {
         <div style="font-weight:900; font-size:16px; margin-top:2px;">Other considerations</div>
         <ul style="margin:8px 0 0 18px;">
           <li>Points in later rounds = Round 1 points multiplied by round number</li>
-          <li>Main St Entertainment: Each of these can be done once: 1) Main St Vehicles, 2) Dapper Dans (watch 5 min), 3) Festival of Fantasy Parade, 4) Starlight Parade, 5) Happily Ever After. Take selfies at beginning and end of each</li>
           <li>No Early Entry (but okay to ride Main St Vehicles prior to park open)</li>
           <li>LL Multi Pass and LL Single Pass are allowed; no LLs carried over from a previous day</li>
         <li>LL Premier Pass, VIP tours, etc. are not allowed!</li>
@@ -1047,27 +1040,21 @@ function buildStartingBracketImage(bgImg, qrAppImg, qrDonateImg) {
     pairCenters(pairCenters(pairCenters(pairCenters(yBase))))
   ];
 
-  // Columns
+  // Columns (R1 is wider; later rounds keep original width but shift right accordingly)
   const x0 = 70;
 
-  // R1 stays as-is; shrink R2+ (and CHAMP) widths by 40% to open space on the right.
-  const colTextW_base = 210;
-  const colTextW_R1 = Math.round(colTextW_base * 1.25);
-  const otherScale = 0.60; // 40% shrink
-  const colTextW = Math.round(colTextW_base * otherScale);
+  const colTextW = 210;                 // R2+ text column width (original)
+  const colTextW_R1 = Math.round(colTextW * 1.25); // R1 only (+25%)
 
-  const connW_base = 25;
-  const colGap_base = 15;
-  const connW_R1 = connW_base;
-  const connW = Math.max(10, Math.round(connW_base * otherScale));
-  const colGap = Math.max(8, Math.round(colGap_base * otherScale));
+  const connW = 25;
+  const colGap = 15;
   const linePad = 10;
 
   const roundIds = ["R1", "R2", "R3", "R4", "R5"];
   const xCols = [x0];
 
   // R2 starts after the widened R1 column
-  xCols.push(xCols[0] + colTextW_R1 + connW_R1 + colGap);
+  xCols.push(xCols[0] + colTextW_R1 + connW + colGap);
 
   // R3+ use original width
   for (let i = 2; i < roundIds.length; i++) xCols.push(xCols[i - 1] + colTextW + connW + colGap);
@@ -1097,7 +1084,7 @@ function buildStartingBracketImage(bgImg, qrAppImg, qrDonateImg) {
 
   // Drawing primitives
   ctx.strokeStyle = "rgba(17,24,39,.22)";
-  ctx.lineWidth = 3;
+  ctx.lineWidth = 2;
 
   function drawLine(x1, y1, x2, y2) {
     ctx.beginPath();
@@ -1112,7 +1099,7 @@ function buildStartingBracketImage(bgImg, qrAppImg, qrDonateImg) {
     const pts = pointsForRideInRound(ridesById.get(id), roundMetaR1);
     const text = `${base} (${pts} pts)`;
     ctx.fillStyle = "#000";
-    ctx.font = isTightLabelRide(id) ? "700 20px system-ui, -apple-system, Segoe UI, Roboto, Arial" : fontEntry;
+    ctx.font = fontEntry;
     ctx.textAlign = "left";
     ctx.textBaseline = "bottom";
     ctx.fillText(text, x, y - 4);
@@ -1126,18 +1113,10 @@ function buildStartingBracketImage(bgImg, qrAppImg, qrDonateImg) {
   for (let i = 0; i < roundIds.length; i++) {
     const tw = (i === 0) ? colTextW_R1 : colTextW;
     ctx.fillText(roundIds[i], xCols[i] + tw / 2, 78);
-
-    // Points multiplier labels (starting bracket only)
-    if (i >= 1) {
-      const mult = i + 1; // R2->2, R3->3, R4->4, R5->5
-      ctx.font = "700 14px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-      ctx.fillText(`(Points x${mult})`, xCols[i] + tw / 2, 102);
-      ctx.font = fontLabel;
-    }
   }
   ctx.fillText("CHAMP", xChamp + colTextW / 2, 78);
 
-// Bracket structure comes from the canonical initial bracket (same seeds/matchups as the app)
+  // Bracket structure comes from the canonical initial bracket (same seeds/matchups as the app)
   const run = { bracket: buildInitialBracket() };
   const rounds = run?.bracket?.rounds || {};
 
@@ -1184,12 +1163,11 @@ function buildStartingBracketImage(bgImg, qrAppImg, qrDonateImg) {
   drawLine(xChamp - linePad, yChamp, xChamp + colTextW, yChamp);
 
   // ---- Rules block (lower-right) ----
-  // Full-height rules block on the right.
-  const sideMargin = 60;
-  const topY = 120;
-  const bottomY = H - 60;
-  const boxY = topY;
-  const boxH = bottomY - topY;
+  // Left edge starts at the CHAMP column so we can use the open space to the right.
+  const boxX = xChamp;                    // CHAMP column start
+  const boxY = Math.round(H * 0.56);
+  const boxW = W - boxX - 60;
+  const boxH = H - boxY - 60;
 
   function roundRect(x, y, w, h, r) {
     const rr = Math.min(r, w / 2, h / 2);
@@ -1221,86 +1199,63 @@ function buildStartingBracketImage(bgImg, qrAppImg, qrDonateImg) {
     return lines;
   }
 
-  // ---- QR codes (right side, stacked next to Rules) ----
-  // Reserve a QR column just left of the Rules box.
+  // ---- QR codes (upper-right) ----
+  // Total width of both QR codes must not exceed the rules box width.
+  const qrGap = 26;
   const qrTarget = 280;
+  const qrSize = Math.max(140, Math.min(qrTarget, Math.floor((boxW - qrGap) / 2)));
+  const qrTotalW = qrSize * 2 + qrGap;
+
+  // Place them in the open space at the upper-right, aligned within the rules region.
+  const qrX1 = boxX + Math.floor((boxW - qrTotalW) / 2);
+  const qrY = 120;
+  const qrX2 = qrX1 + qrSize + qrGap;
+
+  // Backing so they stay scannable over the map
   const qrPad = 14;
-  const qrGapY = 28;
-  const qrLabelFont = "800 20px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-  const qrLabelLineH = 24;
-  const qrLabelMaxLines = 3;
-  const qrLabelH = qrLabelLineH * qrLabelMaxLines;
-  const qrCardH = qrTarget + 12 + qrLabelH;
+  ctx.save();
+  ctx.globalAlpha = 0.82;
+  ctx.fillStyle = "#ffffff";
+  roundRect(qrX1 - qrPad, qrY - qrPad, qrTotalW + qrPad * 2, qrSize + 92, 18);
+  ctx.fill();
+  ctx.restore();
 
-  // Keep QR cards within the same vertical span as the bracket area.
-  const bracketTop = marginTop - 40;
-  const bracketBottom = marginTop + usableH + 10;
-  const qrColTop = Math.max(topY, bracketTop);
-  const qrColBottom = Math.min(bottomY, bracketBottom);
-  const qrColH = qrColBottom - qrColTop;
+  ctx.save();
+  ctx.globalAlpha = 0.25;
+  ctx.strokeStyle = "#000000";
+  ctx.lineWidth = 2;
+  roundRect(qrX1 - qrPad, qrY - qrPad, qrTotalW + qrPad * 2, qrSize + 92, 18);
+  ctx.stroke();
+  ctx.restore();
 
-  // Compute QR size so two stacked cards fit.
-  const maxQrSizeByHeight = Math.floor((qrColH - qrGapY - (12 + qrLabelH) * 2) / 2);
-  const qrSize = Math.max(160, Math.min(qrTarget, maxQrSizeByHeight));
-  const qrCardW = qrSize + qrPad * 2;
+  // Draw images if present
+  try { if (qrAppImg) ctx.drawImage(qrAppImg, qrX1, qrY, qrSize, qrSize); } catch {}
+  try { if (qrDonateImg) ctx.drawImage(qrDonateImg, qrX2, qrY, qrSize, qrSize); } catch {}
 
-  // Rules box width: consume remaining right-side space after QR column.
-  const rightAvailW = W - xChamp - sideMargin;
-  const qrToRulesGap = 24;
-  const boxW = 500;
-  const boxX = W - sideMargin - boxW;
+  // Labels under each QR
+  const labelFont = "800 18px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  ctx.fillStyle = "#000";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "top";
+  const labelMaxW = qrSize;
+  const labelY = qrY + qrSize + 12;
 
-  // QR column x
-  const qrColX = boxX - qrToRulesGap - qrCardW;
-
-  // Place one QR above and one below the CHAMP line y.
-  const champY = yChamp;
-  const qr1Y = Math.max(qrColTop, Math.floor(champY - qrGapY / 2 - qrCardH));
-  const qr2Y = Math.min(qrColBottom - qrCardH, Math.floor(champY + qrGapY / 2));
-
-  function drawQrCard(x, y, img, label) {
-    // Backing (slightly translucent)
-    ctx.save();
-    ctx.globalAlpha = 0.25;
-    ctx.fillStyle = "#ffffff";
-    roundRect(x, y, qrCardW, qrSize + 12 + qrLabelH, 18);
-    ctx.fill();
-    ctx.restore();
-
-    ctx.save();
-    ctx.globalAlpha = 0.25;
-    ctx.strokeStyle = "#000000";
-    ctx.lineWidth = 2;
-    roundRect(x, y, qrCardW, qrSize + 12 + qrLabelH, 18);
-    ctx.stroke();
-    ctx.restore();
-
-    // Image
-    const ix = x + qrPad;
-    const iy = y + qrPad;
-    try { if (img) ctx.drawImage(img, ix, iy, qrSize, qrSize); } catch {}
-
-    // Label
-    ctx.fillStyle = "#000";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "top";
-    const centerX = ix + qrSize / 2;
-    const ly = iy + qrSize + 12;
-    const lines = wrapLines(label, qrSize, qrLabelFont);
-    ctx.font = qrLabelFont;
-    let yy = ly;
-    for (const line of lines.slice(0, qrLabelMaxLines)) {
+  function drawLabel(centerX, text) {
+    const lines = wrapLines(text, labelMaxW, labelFont);
+    ctx.font = labelFont;
+    let yy = labelY;
+    for (const line of lines.slice(0, 3)) {
       ctx.fillText(line, centerX, yy);
-      yy += qrLabelLineH;
+      yy += 22;
     }
   }
 
-  drawQrCard(qrColX, qr1Y, qrAppImg, "Use this web app to track your run and generate your tweets!");
-  drawQrCard(qrColX, qr2Y, qrDonateImg, "Make your fundraising page here!");
+  drawLabel(qrX1 + qrSize / 2, "Use this web app to track your run and generate your tweets!");
+  drawLabel(qrX2 + qrSize / 2, "Make your fundraising page here!");
 
   // Backing so black text is readable on the map
   ctx.save();
-  ctx.globalAlpha = 0.25;
+  ctx.globalAlpha = 0.78;
   ctx.fillStyle = "#ffffff";
   roundRect(boxX, boxY, boxW, boxH, 18);
   ctx.fill();
@@ -1319,195 +1274,82 @@ function buildStartingBracketImage(bgImg, qrAppImg, qrDonateImg) {
   let x = boxX + pad;
   let y = boxY + pad;
 
-  // ---- Rules text (auto-fit to fill the box) ----
+  const fontTitle = "900 30px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  const fontH = "900 22px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  const fontB = "700 22px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  const fontS = "700 17px system-ui, -apple-system, Segoe UI, Roboto, Arial";
   const maxTextW = boxW - pad * 2;
-  const contentTop = boxY + pad;
-  const contentBottom = boxY + boxH - pad;
-
-  // Base typography (will be scaled up until it nearly fills the available height)
-  const base = {
-    title: 32,
-    header: 24,
-    bullet: 20,
-    small: 19
-  };
-
-  function fontStr(weight, px) {
-    return `${weight} ${px}px system-ui, -apple-system, Segoe UI, Roboto, Arial`;
-  }
-
-  // Content model
-  const RULES_SECTIONS = [
-    {
-      header: "The Challenge",
-      bullets: [
-        "A new event from the Every Ride Challenge team!",
-        "March Magic is a 32-attraction bracket-style event — complete attractions to advance them to the next round. Which ride will win your bracket?!",
-        "Earn points, try to score the most!"
-      ],
-      kind: "bullet"
-    },
-    {
-      header: "Required Elements",
-      bullets: [
-        "Take a selfie while in the ride vehicle (or show seat/with character) and tweet with hashtags #ERMarchMagic and tag @RideEvery for credit for each",
-        "If you use a LL, include a screenshot showing the ride and your name in the tweet",
-        "An attraction can advance to the next round only if it has an opponent (no riding Space Mountain as your first 2 rides to advance it to Round 3)",
-        "For attractions where you could “hop off,” include proof you experienced the attraction (mid-ride/show photo or video)"
-      ],
-      kind: "bullet"
-    },
-    {
-      header: "Strongly Encouraged",
-      bullets: [
-        "Use a time stamp camera to help out the official scorers",
-        "Use the app to draft your tweets and track your run [add link]",
-        "Create a fundraising page to support Give Kids the World Village and include the link in your tweets [add link]. Share to family and friends!",
-        "Meet in the Hub at end of night for group photo!"
-      ],
-      kind: "bullet"
-    },
-    {
-      header: "Other considerations",
-      bullets: [
-        "Points in later rounds = Round 1 points multiplied by round number",
-        "Main St Entertainment: Each of these can be done once: 1) Main St Vehicles, 2) Dapper Dans (watch 5 min), 3) Festival of Fantasy Parade, 4) Starlight Parade, 5) Happily Ever After. Take selfies at beginning and end of each",
-        "No Early Entry (but okay to ride Main St Vehicles prior to park open)",
-        "LL Multi Pass and LL Single Pass are allowed; no LLs carried over from a previous day",
-        "LL Premier Pass, VIP tours, etc. are not allowed!",
-        "A multi-experience (anytime) pass must be used for its original ride"
-      ],
-      kind: "small"
-    }
-  ];
-
-  function measureHeight(scale) {
-    const titlePx = Math.round(base.title * scale);
-    const headerPx = Math.round(base.header * scale);
-    const bulletPx = Math.round(base.bullet * scale);
-    const smallPx = Math.round(base.small * scale);
-
-    const titleFont = fontStr(900, titlePx);
-    const headerFont = fontStr(900, headerPx);
-    const bulletFont = fontStr(700, bulletPx);
-    const smallFont = fontStr(700, smallPx);
-
-    const indent = Math.round(18 * scale);
-    const headerGap = Math.round(10 * scale);
-    const afterSectionGap = Math.round(10 * scale);
-
-    const titleH = Math.round(titlePx * 1.25);
-    const headerH = Math.round(headerPx * 1.2);
-    const bulletLineH = Math.round(bulletPx * 1.25);
-    const smallLineH = Math.round(smallPx * 1.25);
-    const bulletGap = Math.round(4 * scale);
-
-    let yy = contentTop;
-
-    // title
-    yy += titleH;
-
-    // sections
-    for (const sec of RULES_SECTIONS) {
-      yy += headerGap;
-      yy += headerH;
-
-      const font = (sec.kind === "small") ? smallFont : bulletFont;
-      const lineH = (sec.kind === "small") ? smallLineH : bulletLineH;
-
-      for (const item of sec.bullets) {
-        const lines = wrapLines(item, maxTextW - indent, font);
-        yy += lines.length * lineH + bulletGap;
-      }
-      yy += afterSectionGap;
-    }
-
-    return yy;
-  }
-
-  // Find the largest scale that still fits
-  let lo = 1.0, hi = 1.6;
-  for (let i = 0; i < 18; i++) {
-    const mid = (lo + hi) / 2;
-    if (measureHeight(mid) <= contentBottom) lo = mid;
-    else hi = mid;
-  }
-  const scale = lo;
-
-  // Final fonts
-  const titlePx = Math.round(base.title * scale);
-  const headerPx = Math.round(base.header * scale);
-  const bulletPx = Math.round(base.bullet * scale);
-  const smallPx = Math.round(base.small * scale);
-
-  const fontTitle = fontStr(900, titlePx);
-  const fontH = fontStr(900, headerPx);
-  const fontB = fontStr(700, bulletPx);
-  const fontS = fontStr(700, smallPx);
-
-  const indent = Math.round(18 * scale);
-  const titleH = Math.round(titlePx * 1.25);
-  const headerH = Math.round(headerPx * 1.2);
-  const bulletLineH = Math.round(bulletPx * 1.25);
-  const smallLineH = Math.round(smallPx * 1.25);
-  const headerGap = Math.round(10 * scale);
-  const afterSectionGap = Math.round(10 * scale);
-  const bulletGap = Math.round(4 * scale);
-
-  // Render
-  let x = boxX + pad;
-  let y = contentTop;
-
-  ctx.fillStyle = "#000";
 
   // Centered title
+  ctx.fillStyle = "#000";
   ctx.font = fontTitle;
   ctx.textAlign = "center";
   ctx.textBaseline = "top";
   ctx.fillText("Rules", boxX + boxW / 2, y);
-  y += titleH;
+  y += 40;
+
 
   function drawHeader(t) {
-    y += headerGap;
     ctx.fillStyle = "#000";
     ctx.textAlign = "left";
     ctx.textBaseline = "top";
     ctx.font = fontH;
     ctx.fillText(t, x, y);
-    y += headerH;
+    y += 28;
   }
 
-  function drawBullets(items, font, lineH) {
+  function drawBullets(items) {
     for (const item of items) {
       const bullet = "•";
-      const lines = wrapLines(item, maxTextW - indent, font);
+      ctx.font = fontB;
+      const lines = wrapLines(item, maxTextW - 18, fontB);
       ctx.fillStyle = "#000";
-      ctx.font = font;
-      ctx.textAlign = "left";
-      ctx.textBaseline = "top";
-
       ctx.fillText(bullet, x, y);
-
       let yy = y;
       for (let i = 0; i < lines.length; i++) {
-        ctx.fillText(lines[i], x + indent, yy);
-        yy += lineH;
+        ctx.fillText(lines[i], x + 18, yy);
+        yy += 26;
       }
-      y = yy + bulletGap;
-
-      if (y > contentBottom - 6) return;
+      y = yy + 6;
+      // stop if we're running out of vertical space
+      if (y > boxY + boxH - 30) return;
     }
   }
 
-  for (const sec of RULES_SECTIONS) {
-    drawHeader(sec.header);
-    if (sec.kind === "small") drawBullets(sec.bullets, fontS, smallLineH);
-    else drawBullets(sec.bullets, fontB, bulletLineH);
-    y += afterSectionGap;
-    if (y > contentBottom - 6) break;
-  }
+  drawHeader("The Challenge");
+  drawBullets([
+    "A new event from the Every Ride Challenge team!",
+    "March Magic is a 32-attraction bracket-style event — complete attractions to advance them to the next round. Which ride will win your bracket?!",
+    "Earn points, try to score the most!"
+  ]);
 
-return canvas.toDataURL("image/png");
+  drawHeader("Required Elements");
+  drawBullets([
+    "Take a selfie while in the ride vehicle (or show seat/with character) and tweet with hashtags #ERMarchMagic and tag @RideEvery for credit for each",
+    "If you use a LL, include a screenshot showing the ride and your name in the tweet",
+    "An attraction can advance to the next round only if it has an opponent (no riding Space Mountain as your first 2 rides to advance it to Round 3)",
+    "For attractions where you could “hop off,” include proof you experienced the attraction (mid-ride/show photo or video)"
+  ]);
+
+  drawHeader("Strongly Encouraged");
+  drawBullets([
+    "Use a time stamp camera to help out the official scorers",
+    "Use the app to draft your tweets and track your run [add link]",
+    "Create a fundraising page to support Give Kids the World Village and include the link in your tweets [add link]. Share to family and friends!",
+    "Meet in the Hub at end of night for group photo!"
+  ]);
+
+  drawHeader("Other considerations");
+  ctx.font = fontS;
+  drawBullets([
+    "Points in later rounds = Round 1 points multiplied by round number",
+    "No Early Entry (but okay to ride Main St Vehicles prior to park open)",
+    "LL Multi Pass and LL Single Pass are allowed; no LLs carried over from a previous day",
+    "LL Premier Pass, VIP tours, etc. are not allowed!",
+    "A multi-experience (anytime) pass must be used for its original ride"
+  ]);
+
+  return canvas.toDataURL("image/png");
 }
 
 
@@ -1707,7 +1549,7 @@ const yBase = Array.from({ length: teams }, (_, i) => {
     const text = (isWinner && pts) ? `${base} (${pts})` : base;
 
     ctx.fillStyle = decided ? (isWinner ? "#16a34a" : "#dc2626") : "rgba(17,24,39,.80)";
-    ctx.font = isTightLabelRide(id) ? "700 18px system-ui, -apple-system, Segoe UI, Roboto, Arial" : fontEntry;
+    ctx.font = fontEntry;
     ctx.textAlign = "left";
     ctx.textBaseline = "bottom";
     const textOffset = 4;
