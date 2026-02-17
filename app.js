@@ -1319,81 +1319,193 @@ function buildStartingBracketImage(bgImg, qrAppImg, qrDonateImg) {
   let x = boxX + pad;
   let y = boxY + pad;
 
-  const fontTitle = "900 32px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-  const fontH = "900 24px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-  const fontB = "700 20px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-  const fontS = "700 19px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  // ---- Rules text (auto-fit to fill the box) ----
   const maxTextW = boxW - pad * 2;
+  const contentTop = boxY + pad;
+  const contentBottom = boxY + boxH - pad;
+
+  // Base typography (will be scaled up until it nearly fills the available height)
+  const base = {
+    title: 32,
+    header: 24,
+    bullet: 20,
+    small: 19
+  };
+
+  function fontStr(weight, px) {
+    return `${weight} ${px}px system-ui, -apple-system, Segoe UI, Roboto, Arial`;
+  }
+
+  // Content model
+  const RULES_SECTIONS = [
+    {
+      header: "The Challenge",
+      bullets: [
+        "A new event from the Every Ride Challenge team!",
+        "March Magic is a 32-attraction bracket-style event — complete attractions to advance them to the next round. Which ride will win your bracket?!",
+        "Earn points, try to score the most!"
+      ],
+      kind: "bullet"
+    },
+    {
+      header: "Required Elements",
+      bullets: [
+        "Take a selfie while in the ride vehicle (or show seat/with character) and tweet with hashtags #ERMarchMagic and tag @RideEvery for credit for each",
+        "If you use a LL, include a screenshot showing the ride and your name in the tweet",
+        "An attraction can advance to the next round only if it has an opponent (no riding Space Mountain as your first 2 rides to advance it to Round 3)",
+        "For attractions where you could “hop off,” include proof you experienced the attraction (mid-ride/show photo or video)"
+      ],
+      kind: "bullet"
+    },
+    {
+      header: "Strongly Encouraged",
+      bullets: [
+        "Use a time stamp camera to help out the official scorers",
+        "Use the app to draft your tweets and track your run [add link]",
+        "Create a fundraising page to support Give Kids the World Village and include the link in your tweets [add link]. Share to family and friends!",
+        "Meet in the Hub at end of night for group photo!"
+      ],
+      kind: "bullet"
+    },
+    {
+      header: "Other considerations",
+      bullets: [
+        "Points in later rounds = Round 1 points multiplied by round number",
+        "Main St Entertainment: Each of these can be done once: 1) Main St Vehicles, 2) Dapper Dans (watch 5 min), 3) Festival of Fantasy Parade, 4) Starlight Parade, 5) Happily Ever After. Take selfies at beginning and end of each",
+        "No Early Entry (but okay to ride Main St Vehicles prior to park open)",
+        "LL Multi Pass and LL Single Pass are allowed; no LLs carried over from a previous day",
+        "LL Premier Pass, VIP tours, etc. are not allowed!",
+        "A multi-experience (anytime) pass must be used for its original ride"
+      ],
+      kind: "small"
+    }
+  ];
+
+  function measureHeight(scale) {
+    const titlePx = Math.round(base.title * scale);
+    const headerPx = Math.round(base.header * scale);
+    const bulletPx = Math.round(base.bullet * scale);
+    const smallPx = Math.round(base.small * scale);
+
+    const titleFont = fontStr(900, titlePx);
+    const headerFont = fontStr(900, headerPx);
+    const bulletFont = fontStr(700, bulletPx);
+    const smallFont = fontStr(700, smallPx);
+
+    const indent = Math.round(18 * scale);
+    const headerGap = Math.round(10 * scale);
+    const afterSectionGap = Math.round(10 * scale);
+
+    const titleH = Math.round(titlePx * 1.25);
+    const headerH = Math.round(headerPx * 1.2);
+    const bulletLineH = Math.round(bulletPx * 1.25);
+    const smallLineH = Math.round(smallPx * 1.25);
+    const bulletGap = Math.round(4 * scale);
+
+    let yy = contentTop;
+
+    // title
+    yy += titleH;
+
+    // sections
+    for (const sec of RULES_SECTIONS) {
+      yy += headerGap;
+      yy += headerH;
+
+      const font = (sec.kind === "small") ? smallFont : bulletFont;
+      const lineH = (sec.kind === "small") ? smallLineH : bulletLineH;
+
+      for (const item of sec.bullets) {
+        const lines = wrapLines(item, maxTextW - indent, font);
+        yy += lines.length * lineH + bulletGap;
+      }
+      yy += afterSectionGap;
+    }
+
+    return yy;
+  }
+
+  // Find the largest scale that still fits
+  let lo = 1.0, hi = 1.6;
+  for (let i = 0; i < 18; i++) {
+    const mid = (lo + hi) / 2;
+    if (measureHeight(mid) <= contentBottom) lo = mid;
+    else hi = mid;
+  }
+  const scale = lo;
+
+  // Final fonts
+  const titlePx = Math.round(base.title * scale);
+  const headerPx = Math.round(base.header * scale);
+  const bulletPx = Math.round(base.bullet * scale);
+  const smallPx = Math.round(base.small * scale);
+
+  const fontTitle = fontStr(900, titlePx);
+  const fontH = fontStr(900, headerPx);
+  const fontB = fontStr(700, bulletPx);
+  const fontS = fontStr(700, smallPx);
+
+  const indent = Math.round(18 * scale);
+  const titleH = Math.round(titlePx * 1.25);
+  const headerH = Math.round(headerPx * 1.2);
+  const bulletLineH = Math.round(bulletPx * 1.25);
+  const smallLineH = Math.round(smallPx * 1.25);
+  const headerGap = Math.round(10 * scale);
+  const afterSectionGap = Math.round(10 * scale);
+  const bulletGap = Math.round(4 * scale);
+
+  // Render
+  let x = boxX + pad;
+  let y = contentTop;
+
+  ctx.fillStyle = "#000";
 
   // Centered title
-  ctx.fillStyle = "#000";
   ctx.font = fontTitle;
   ctx.textAlign = "center";
   ctx.textBaseline = "top";
   ctx.fillText("Rules", boxX + boxW / 2, y);
-  y += 40;
-
+  y += titleH;
 
   function drawHeader(t) {
+    y += headerGap;
     ctx.fillStyle = "#000";
     ctx.textAlign = "left";
     ctx.textBaseline = "top";
     ctx.font = fontH;
     ctx.fillText(t, x, y);
-    y += 28;
+    y += headerH;
   }
 
-  function drawBullets(items) {
+  function drawBullets(items, font, lineH) {
     for (const item of items) {
       const bullet = "•";
-      ctx.font = fontB;
-      const lines = wrapLines(item, maxTextW - 18, fontB);
+      const lines = wrapLines(item, maxTextW - indent, font);
       ctx.fillStyle = "#000";
+      ctx.font = font;
+      ctx.textAlign = "left";
+      ctx.textBaseline = "top";
+
       ctx.fillText(bullet, x, y);
+
       let yy = y;
       for (let i = 0; i < lines.length; i++) {
-        ctx.fillText(lines[i], x + 18, yy);
-        yy += 19;
+        ctx.fillText(lines[i], x + indent, yy);
+        yy += lineH;
       }
-      y = yy + 4;
-      // stop if we're running out of vertical space
-      if (y > boxY + boxH - 30) return;
+      y = yy + bulletGap;
+
+      if (y > contentBottom - 6) return;
     }
   }
 
-  drawHeader("The Challenge");
-  drawBullets([
-    "A new event from the Every Ride Challenge team!",
-    "March Magic is a 32-attraction bracket-style event — complete attractions to advance them to the next round. Which ride will win your bracket?!",
-    "Earn points, try to score the most!"
-  ]);
-
-  drawHeader("Required Elements");
-  drawBullets([
-    "Take a selfie while in the ride vehicle (or show seat/with character) and tweet with hashtags #ERMarchMagic and tag @RideEvery for credit for each",
-    "If you use a LL, include a screenshot showing the ride and your name in the tweet",
-    "An attraction can advance to the next round only if it has an opponent (no riding Space Mountain as your first 2 rides to advance it to Round 3)",
-    "For attractions where you could “hop off,” include proof you experienced the attraction (mid-ride/show photo or video)"
-  ]);
-
-  drawHeader("Strongly Encouraged");
-  drawBullets([
-    "Use a time stamp camera to help out the official scorers",
-    "Use the app to draft your tweets and track your run [add link]",
-    "Create a fundraising page to support Give Kids the World Village and include the link in your tweets [add link]. Share to family and friends!",
-    "Meet in the Hub at end of night for group photo!"
-  ]);
-
-  drawHeader("Other considerations");
-  ctx.font = fontS;
-  drawBullets([
-    "Points in later rounds = Round 1 points multiplied by round number",
-    "Main St Entertainment: Each of these can be done once: 1) Main St Vehicles, 2) Dapper Dans (watch 5 min), 3) Festival of Fantasy Parade, 4) Starlight Parade, 5) Happily Ever After. Take selfies at beginning and end of each",
-    "No Early Entry (but okay to ride Main St Vehicles prior to park open)",
-    "LL Multi Pass and LL Single Pass are allowed; no LLs carried over from a previous day",
-    "LL Premier Pass, VIP tours, etc. are not allowed!",
-    "A multi-experience (anytime) pass must be used for its original ride"
-  ]);
+  for (const sec of RULES_SECTIONS) {
+    drawHeader(sec.header);
+    if (sec.kind === "small") drawBullets(sec.bullets, fontS, smallLineH);
+    else drawBullets(sec.bullets, fontB, bulletLineH);
+    y += afterSectionGap;
+    if (y > contentBottom - 6) break;
+  }
 
 return canvas.toDataURL("image/png");
 }
