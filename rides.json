@@ -64,9 +64,9 @@
     "land": "LS"
   },
   {
-    "id": "COP",
+    "id": "AO",
     "rideNumber": 9,
-    "shortName": "COP",
+    "shortName": "AO",
     "pointsRound1": 20,
     "seed": 6,
     "land": "TL"
@@ -120,9 +120,9 @@
     "land": "TL"
   },
   {
-    "id": "AO",
+    "id": "COP",
     "rideNumber": 16,
-    "shortName": "AO",
+    "shortName": "COP",
     "pointsRound1": 15,
     "seed": 15,
     "land": "TL"

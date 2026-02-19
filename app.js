@@ -518,8 +518,6 @@ function renderMatchCard(roundId, m, idx) {
   const a = ridesById.get(m.a);
   const b = ridesById.get(m.b);
 
-  const seedText = (a?.seed && b?.seed) ? `${a.seed} vs. ${b.seed} seed` : "";
-
   const pointsA = pointsForRideInRound(a, roundMeta);
   const pointsB = pointsForRideInRound(b, roundMeta);
 
@@ -538,7 +536,7 @@ function renderMatchCard(roundId, m, idx) {
   return `
     <div class="matchCard">
       <div class="matchHeader">
-        <div class="matchTitle">Matchup ${idx + 1} · ${escapeHtml(roundMeta.label)}${seedText ? " · " + escapeHtml(seedText) : ""}</div>
+        <div class="matchTitle">Matchup ${idx + 1} · ${escapeHtml(roundMeta.label)}</div>
       </div>
 
       <div class="matchBody">
@@ -1085,13 +1083,7 @@ function buildStartingBracketImage(bgImg, qrAppImg, qrDonateImg) {
   }
   function labelFor(id) {
     if (!id) return "";
-    const rawSeed = seedOf(id);
-    const s = shortNameFor(id);
-    const seedStr0 = (rawSeed === null || rawSeed === undefined) ? "" : String(rawSeed).trim();
-    if (!seedStr0) return s;
-    const before = (seedStr0.length === 1) ? "  " : "";
-    const after = "  ";
-    return `${before}${seedStr0}${after}${s}`;
+    return shortNameFor(id);
   }
   const roundMetaR1 = ROUNDS.find(r => r.id === "R1") || ROUNDS[0];
 
@@ -1247,7 +1239,7 @@ function buildStartingBracketImage(bgImg, qrAppImg, qrDonateImg) {
   // Rules box width: consume remaining right-side space after QR column.
   const rightAvailW = W - xChamp - sideMargin;
   const qrToRulesGap = 24;
-  const boxW = 500;
+  const boxW = 550;
   const boxX = W - sideMargin - boxW;
 
   // QR column x
@@ -1559,20 +1551,9 @@ const yBase = Array.from({ length: teams }, (_, i) => {
     return r?.seed ?? "";
   }
   function labelFor(id) {
-  if (!id) return "";
-  const rawSeed = seedOf(id);
-  const s = shortNameFor(id);
-
-  // Requested "visual" alignment using literal spaces (even though font isn't monospace).
-  // - Add 2 spaces BEFORE single-digit seeds
-  // - Add 2 spaces AFTER every seed
-  const seedStr0 = (rawSeed === null || rawSeed === undefined) ? "" : String(rawSeed).trim();
-  if (!seedStr0) return s;
-
-  const before = (seedStr0.length === 1) ? "  " : "";
-  const after = "  ";
-  return `${before}${seedStr0}${after}${s}`;
-}
+    if (!id) return "";
+    return shortNameFor(id);
+  }
   function winnerPoints(roundId, match) {
     try { return pointsForWinnerFromMatch(roundId, match) || 0; } catch { return 0; }
   }
