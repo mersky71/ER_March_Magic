@@ -916,27 +916,26 @@ function openRulesDialog() {
         <ul style="margin:8px 0 14px 18px;">
           <li>Take a selfie while in the ride vehicle (or show seat or with character) and tweet with hashtags #ERMarchMagic and tag @RideEvery for credit for each</li>
           <li>If you use a LL, include screenshot showing ride and your name in the tweet</li>
-          <li>An attraction can advance to the next round only if it has an “opponent” (no riding Space Mountain as your first 2 rides to advance it to Round 3)</li>
+          <li>An attraction can advance to the next round only if it has an “opponent” (you can’t ride Space Mountain as your first 2 rides to advance it to Round 3)</li>
           <li>For attractions where you could “hop off,” include proof you experienced the attraction (mid-ride/show video or photo)</li>
         </ul>
 
         <div style="font-weight:900; font-size:16px; margin-top:2px;">Strongly Encouraged</div>
         <ul style="margin:8px 0 14px 18px;">
           <li>Use a time stamp camera to help out the official scorers</li>
-          <li>Use the app to draft your tweets and track your run <span style="color:#6b7280;">[add link]</span></li>
-          <li>Create a fundraising page to support Give Kids the World Village and include the link in your tweets <span style="color:#6b7280;">[add link]</span>. Share to family and friends!</li>
+          <li>Use the app to draft your tweets and track your run</li>
+          <li>Create a fundraising page to support Give Kids the World Village and include the link in your tweets. Share to family and friends!</li>
           <li>Meet in the Hub at end of night for group photo!</li>
         </ul>
 
         <div style="font-weight:900; font-size:16px; margin-top:2px;">Other considerations</div>
         <ul style="margin:8px 0 0 18px;">
           <li>Points in later rounds = Round 1 points multiplied by round number</li>
-          <li>Main St Entertainment: Each of these can be done once: 1) Main St Vehicles, 2) Dapper Dans (watch 5 min), 3) Festival of Fantasy Parade, 4) Starlight Parade, 5) Happily Ever After. Take selfies at beginning and end of each</li>
+          <li>Main St Entertainment: Each of these can be done once: 1) Main St Vehicles, 2) Dapper Dans (watch 5 min), 3) Festival of Fantasy Parade, 4) Starlight Parade, 5) Happily Ever After. Parades/Fireworks: Take selfies at beginning and end of show (or first float/last float)</li>
           <li>No Early Entry (but okay to ride Main St Vehicles prior to park open)</li>
           <li>LL Multi Pass and LL Single Pass are allowed; no LLs carried over from a previous day</li>
-        <li>LL Premier Pass, VIP tours, etc. are not allowed!</li>
+          <li>LL Premier Pass, VIP tours, etc. are not allowed!</li>
           <li>A multi-experience (anytime) pass must be used for its original ride</li>
-          
         </ul>
       </div>
     `,
@@ -1355,23 +1354,23 @@ function buildStartingBracketImage(bgImg, qrAppImg, qrDonateImg) {
   drawHeader("The Challenge");
   drawBullets([
     "A new event from the Every Ride Challenge team!",
-    "March Magic is a 32-attraction bracket-style event — complete attractions to advance them to the next round. Which ride will win your bracket?!",
+    "March Magic is a 32-attraction bracket-style event \u2014 complete attractions to advance them to the next round. Which ride will win your bracket?!",
     "Earn points, try to score the most!"
   ]);
 
   drawHeader("Required Elements");
   drawBullets([
-    "Take a selfie while in the ride vehicle (or show seat/with character) and tweet with hashtags #ERMarchMagic and tag @RideEvery for credit for each",
-    "If you use a LL, include a screenshot showing the ride and your name in the tweet",
-    "An attraction can advance to the next round only if it has an opponent (no riding Space Mountain as your first 2 rides to advance it to Round 3)",
-    "For attractions where you could “hop off,” include proof you experienced the attraction (mid-ride/show photo or video)"
+    "Take a selfie while in the ride vehicle (or show seat or with character) and tweet with hashtags #ERMarchMagic and tag @RideEvery for credit for each",
+    "If you use a LL, include screenshot showing ride and your name in the tweet",
+    "An attraction can advance to the next round only if it has an opponent (you can\u2019t ride Space Mountain as your first 2 rides to advance it to Round 3)",
+    "For attractions where you could \u201chop off,\u201d include proof you experienced the attraction (mid-ride/show video or photo)"
   ]);
 
   drawHeader("Strongly Encouraged");
   drawBullets([
     "Use a time stamp camera to help out the official scorers",
-    "Use the app to draft your tweets and track your run [add link]",
-    "Create a fundraising page to support Give Kids the World Village and include the link in your tweets [add link]. Share to family and friends!",
+    "Use the app to draft your tweets and track your run",
+    "Create a fundraising page to support Give Kids the World Village and include the link in your tweets. Share to family and friends!",
     "Meet in the Hub at end of night for group photo!"
   ]);
 
@@ -1379,7 +1378,7 @@ function buildStartingBracketImage(bgImg, qrAppImg, qrDonateImg) {
   ctx.font = fontS;
   drawBullets([
     "Points in later rounds = Round 1 points multiplied by round number",
-    "Main St Entertainment: Each of these can be done once: 1) Main St Vehicles, 2) Dapper Dans (watch 5 min), 3) Festival of Fantasy Parade, 4) Starlight Parade, 5) Happily Ever After. Take selfies at beginning and end of each",
+    "Main St Entertainment: Each of these can be done once: 1) Main St Vehicles, 2) Dapper Dans (watch 5 min), 3) Festival of Fantasy Parade, 4) Starlight Parade, 5) Happily Ever After. Parades/Fireworks: Take selfies at beginning and end of show (or first float/last float)",
     "No Early Entry (but okay to ride Main St Vehicles prior to park open)",
     "LL Multi Pass and LL Single Pass are allowed; no LLs carried over from a previous day",
     "LL Premier Pass, VIP tours, etc. are not allowed!",
