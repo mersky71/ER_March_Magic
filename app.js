@@ -174,6 +174,7 @@ function renderStartPage() {
         <div class="btnRow" style="margin-top:12px;">
           <button id="rulesBtn" class="btn" type="button">Rules</button>
           <button id="bracketBtn" class="btn" type="button">Bracket</button>
+          <button id="fundraisingBtn" class="btn" type="button">Fundraising</button>
         </div>
 
       </div>
@@ -231,6 +232,11 @@ function renderStartPage() {
   document.getElementById("bracketBtn")?.addEventListener("click", () => {
     openStartingBracketDialog().catch(() => {});
   });
+
+  document.getElementById("fundraisingBtn")?.addEventListener("click", () => {
+    openFundraisingDialog();
+  });
+
 
   document.getElementById("rulesBtn")?.addEventListener("click", () => {
     openRulesDialog();
@@ -940,6 +946,30 @@ function openRulesDialog() {
       </div>
     `,
     buttons: [{ text: "Close", className: "btn btnPrimary", action: () => closeDialog() }]
+  });
+}
+
+
+function openFundraisingDialog() {
+  const url = "https://give.gktw.org/event/every-ride-challenge-2025/e664454";
+  openDialog({
+    title: "Fundraising",
+    body: "",
+    content: `
+      <div style="max-height:70vh; overflow:auto; padding-right:2px; line-height:1.35;">
+        <ul style="margin:8px 0 14px 18px;">
+          <li>Give Kids The World is an 89-acre, whimsical nonprofit resort in Central Florida that provides critically ill children and their families from around the world with magical week-long wish vacations at no cost.</li>
+          <li>The Every Ride team has raised over $200,000 for the village since 2018.</li>
+          <li>To create a fundraising page, click the button below, then click on the Register button, then register as an individual.</li>
+          <li>This will create your personal fundraising page. Share the link to family and friends so they can support your run, and include the link on your tweets!</li>
+          <li>All donations go directly to Give Kids the World Village.</li>
+        </ul>
+      </div>
+    `,
+    buttons: [
+      { text: "Close", className: "btn", action: () => closeDialog() },
+      { text: "Fundraising Page", className: "btn btnPrimary", action: () => { window.open(url, "_blank", "noopener,noreferrer"); closeDialog(); } }
+    ]
   });
 }
 
