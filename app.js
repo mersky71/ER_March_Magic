@@ -170,7 +170,7 @@ function renderStartPage() {
     <div class="stack">
       <div class="card">
         <div class="h1">Welcome</div>
-        <p class="p">Run the Every Ride March Magic Bracket Challenge on March 14, 2026. Experience attractions, earn points, and auto-open tweet drafts.</p>
+        <p class="p">Run the Every Ride March Magic Bracket Challenge on March 13-14, 2026. Experience attractions, earn points, and auto-open tweet drafts.</p>
         <div class="btnRow" style="margin-top:12px;">
           <button id="rulesBtn" class="btn" type="button">Rules</button>
           <button id="bracketBtn" class="btn" type="button">Bracket</button>
@@ -913,7 +913,7 @@ function openRulesDialog() {
       <div style="max-height:70vh; overflow:auto; padding-right:2px; line-height:1.35;">
         <div style="font-weight:900; font-size:16px; margin-top:2px;">The Challenge</div>
         <ul style="margin:8px 0 14px 18px;">
-          <li>A new event from the Every Ride Challenge team!</li>
+          <li>A new event from the Every Ride team!</li>
           <li>March Magic is a 32-attraction bracket-style event - complete attractions to advance them to the next round. Which ride will win your bracket?!</li>
           <li>Earn points, try to score the most!</li>
         </ul>
@@ -1382,7 +1382,7 @@ function buildStartingBracketImage(bgImg, qrAppImg, qrDonateImg) {
 
   drawHeader("The Challenge");
   drawBullets([
-    "A new event from the Every Ride Challenge team!",
+    "A new event from the Every Ride team!",
     "March Magic is a 32-attraction bracket-style event \u2014 complete attractions to advance them to the next round. Which ride will win your bracket?!",
     "Earn points, try to score the most!"
   ]);
