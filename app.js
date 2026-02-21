@@ -114,7 +114,7 @@ function setupMoreMenu() {
     closeMore();
     if (!active) return;
     openConfirmDialog({
-      title: "End challenge?",
+      title: "Return to Start?",
       body: "This will save this bracket into Recent history, clear the active run, and return to Start.",
       confirmText: "End and return to Start",
       confirmClass: "btnDanger",
@@ -170,7 +170,7 @@ function renderStartPage() {
     <div class="stack">
       <div class="card">
         <div class="h1">Welcome</div>
-        <p class="p">Run the Every Ride March Magic Bracket Challenge on March 13–14, 2026. Experience attractions, earn points, and auto-open tweet drafts.</p>
+        <p class="p">Run the Every Ride March Magic Bracket Challenge on March 14, 2026. Experience attractions, earn points, and auto-open tweet drafts.</p>
         <div class="btnRow" style="margin-top:12px;">
           <button id="rulesBtn" class="btn" type="button">Rules</button>
           <button id="bracketBtn" class="btn" type="button">Bracket</button>
@@ -913,7 +913,7 @@ function openRulesDialog() {
       <div style="max-height:70vh; overflow:auto; padding-right:2px; line-height:1.35;">
         <div style="font-weight:900; font-size:16px; margin-top:2px;">The Challenge</div>
         <ul style="margin:8px 0 14px 18px;">
-          <li>A new event from the Every Ride team!</li>
+          <li>A new event from the Every Ride Challenge team!</li>
           <li>March Magic is a 32-attraction bracket-style event - complete attractions to advance them to the next round. Which ride will win your bracket?!</li>
           <li>Earn points, try to score the most!</li>
         </ul>
@@ -958,9 +958,8 @@ function openFundraisingDialog() {
     content: `
       <div style="max-height:70vh; overflow:auto; padding-right:2px; line-height:1.35;">
         <ul style="margin:8px 0 14px 18px;">
-          <li>Give Kids The World is an 89-acre, whimsical nonprofit resort in Central Florida that provides critically ill children and their families from around the world with magical week-long wish vacations at no cost.</li>
-          <li>The Every Ride team has raised over $200,000 for the village since 2018.</li>
-          <li>To make a fundraising page, click the button below, then click on the Register button, then register as an individual.</li>
+          <li>Give Kids The World Village is an 89-acre, whimsical nonprofit resort in Central Florida that provides critically ill children and their families from around the world with magical week-long wish vacations at no cost. The Every Ride team has raised over $200,000 for the village since 2018.</li>
+          <li>To create a fundraising page, click the button below, then click on the Register button, then register as an individual.</li>
           <li>This will create your personal fundraising page. Share the link to family and friends so they can support your run, and include the link on your tweets!</li>
           <li>All donations go directly to Give Kids the World Village.</li>
         </ul>
@@ -1383,7 +1382,7 @@ function buildStartingBracketImage(bgImg, qrAppImg, qrDonateImg) {
 
   drawHeader("The Challenge");
   drawBullets([
-    "A new event from the Every Ride team!",
+    "A new event from the Every Ride Challenge team!",
     "March Magic is a 32-attraction bracket-style event \u2014 complete attractions to advance them to the next round. Which ride will win your bracket?!",
     "Earn points, try to score the most!"
   ]);
@@ -1773,7 +1772,7 @@ function openHistoryDialog() {
           <thead>
             <tr style="background:rgba(34,211,238,.18);">
               <th style="text-align:left; padding:10px;">Started</th>
-              <th style="text-align:center; padding:10px;">Completed</th>
+              <th style="text-align:center; padding:10px;">Decided</th>
               <th style="text-align:right; padding:10px;">Actions</th>
             </tr>
           </thead>
@@ -1806,7 +1805,7 @@ function openHistoryDialog() {
         body: "",
         content: `
           <div class="card" style="border:1px solid rgba(17,24,39,.12);">
-            <div style="font-weight:900;">Completed</div>
+            <div style="font-weight:900;">Decided</div>
             <div style="margin-top:6px;">${countDecisions(run)}/31</div>
             <div style="margin-top:10px;font-weight:900;">Points</div>
             <div style="margin-top:6px;">${computePointsTotal(run)}</div>
