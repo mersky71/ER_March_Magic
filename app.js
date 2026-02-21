@@ -116,7 +116,7 @@ function setupMoreMenu() {
     openConfirmDialog({
       title: "Return to Start?",
       body: "This will save this bracket into Recent history, clear the active run, and return to Start.",
-      confirmText: "End and return to Start",
+      confirmText: "Return to Start",
       confirmClass: "btnDanger",
       onConfirm: () => {
         if (active && (active.events?.length ?? 0) > 0) {
