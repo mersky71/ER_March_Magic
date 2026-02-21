@@ -959,7 +959,7 @@ function openFundraisingDialog() {
       <div style="max-height:70vh; overflow:auto; padding-right:2px; line-height:1.35;">
         <ul style="margin:8px 0 14px 18px;">
           <li>Give Kids The World Village is an 89-acre, whimsical nonprofit resort in Central Florida that provides critically ill children and their families from around the world with magical week-long wish vacations at no cost. The Every Ride team has raised over $200,000 for the village since 2018.</li>
-          <li>To create a fundraising page, click the button below, then click on the Register button, then register as an individual.</li>
+          <li>To make a fundraising page, click the button below, then click on the Register button, then register as an individual.</li>
           <li>This will create your personal fundraising page. Share the link to family and friends so they can support your run, and include the link on your tweets!</li>
           <li>All donations go directly to Give Kids the World Village.</li>
         </ul>
