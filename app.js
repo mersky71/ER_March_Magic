@@ -783,7 +783,7 @@ ${tags}` : base;
 function openCinderellaBonusDialog() {
   openDialog({
     title: "Cinderella Story Bonus Attraction",
-    body: "When you have completed a Cinderella Story bonus attraction, click to send tweet",
+    body: "Did you complete a Cinderella story bonus attraction sent out be the Every Ride team? Click to send your tweet to document it!",
     content: "",
     buttons: [
       {
@@ -1442,7 +1442,7 @@ function buildStartingBracketImage(bgImg, qrAppImg, qrDonateImg) {
   ctx.font = fontS;
   drawBullets([
     "Points in later rounds = Round 1 points multiplied by round number",
-    "Main St Entertainment: Each of these can be done once: 1) Main St Vehicles, 2) Dapper Dans (watch 5 min), 3) Festival of Fantasy Parade, 4) Starlight Parade, 5) Happily Ever After. Parades/Fireworks: Take selfies at beginning and end of show (or first float/last float)",
+    "Main St Entertainment: Each of these can be done once: 1) Main St Vehicles, 2) Dapper Dans (watch 5 min), 3) Festival of Fantasy Parade, 4) Starlight Parade, 5) Happily Ever After, 6) Cavalcade. Parades/Fireworks: Take selfies at beginning and end of show (or first float/last float)",
     "No Early Entry (but okay to ride Main St Vehicles prior to park open)",
     "LL Multi Pass and LL Single Pass are allowed; no LLs carried over from a previous day",
     "LL Premier Pass, VIP tours, etc. are not allowed!",
