@@ -937,7 +937,7 @@ function openRulesDialog() {
         <div style="font-weight:900; font-size:16px; margin-top:2px;">Other considerations</div>
         <ul style="margin:8px 0 0 18px;">
           <li>Points in later rounds = Round 1 points multiplied by round number</li>
-          <li>Main St Entertainment: Each of these can be done once: 1) Main St Vehicles, 2) Dapper Dans (watch 5 min), 3) Festival of Fantasy Parade, 4) Starlight Parade, 5) Happily Ever After. Parades/Fireworks: Take selfies at beginning and end of show (or first float/last float)</li>
+          <li>Main St Entertainment: Each of these can be done once: 1) Main St Vehicles, 2) Dapper Dans (watch 5 min), 3) Festival of Fantasy Parade, 4) Starlight Parade, 5) Happily Ever After, 6) Cavalcade. Parades/Fireworks: Take selfies at beginning and end of show (or first float/last float)</li>
           <li>No Early Entry (but okay to ride Main St Vehicles prior to park open)</li>
           <li>LL Multi Pass and LL Single Pass are allowed; no LLs carried over from a previous day</li>
           <li>LL Premier Pass, VIP tours, etc. are not allowed!</li>
