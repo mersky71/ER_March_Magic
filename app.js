@@ -22,6 +22,7 @@ const dialogHost = document.getElementById("dialogHost");
 const moreBtn = document.getElementById("moreBtn");
 const moreMenu = document.getElementById("moreMenu");
 const shareUpdateMenuBtn = document.getElementById("shareUpdateMenuBtn");
+const cinderellaBonusMenuBtn = document.getElementById("cinderellaBonusMenuBtn");
 const settingsMenuBtn = document.getElementById("settingsMenuBtn");
 const endToStartBtn = document.getElementById("endToStartBtn");
 
@@ -102,7 +103,13 @@ function setupMoreMenu() {
     closeMore();
     if (!active) return;
     openBracketImageDialog().catch(() => {});
-});
+  });
+
+  cinderellaBonusMenuBtn?.addEventListener("click", () => {
+    closeMore();
+    if (!active) return;
+    openCinderellaBonusDialog();
+  });
 
   settingsMenuBtn?.addEventListener("click", () => {
     closeMore();
@@ -763,6 +770,34 @@ function rebuildRoundsFromEvents() {
     }
   }
   active.bracket.currentRoundId = "R1";
+}
+
+function buildTaggedTweet(mainText) {
+  const base = (mainText || "").trim();
+  const tags = (active?.settings?.tagsText ?? active?.settings?.tweetTags ?? "").trim();
+  return tags ? `${base}
+
+${tags}` : base;
+}
+
+function openCinderellaBonusDialog() {
+  openDialog({
+    title: "Cinderella Story Bonus Attraction",
+    body: "When you have completed a Cinderella Story bonus attraction, click to send tweet",
+    content: "",
+    buttons: [
+      {
+        text: "Send tweet",
+        className: "btn btnPrimary",
+        action: () => {
+          const tweet = buildTaggedTweet("Cinderella Story Bonus Attraction");
+          closeDialog();
+          openTweetDraft(tweet);
+        }
+      },
+      { text: "Cancel", className: "btn", action: () => closeDialog() }
+    ]
+  });
 }
 
 function buildDecisionTweet(attractionNumber, roundId, matchupNumber, winnerId, loserId, points, timeISO, tagsText, fundraisingLink) {
