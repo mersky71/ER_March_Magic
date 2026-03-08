@@ -772,34 +772,6 @@ function rebuildRoundsFromEvents() {
   active.bracket.currentRoundId = "R1";
 }
 
-function buildTaggedTweet(mainText) {
-  const base = (mainText || "").trim();
-  const tags = (active?.settings?.tagsText ?? active?.settings?.tweetTags ?? "").trim();
-  return tags ? `${base}
-
-${tags}` : base;
-}
-
-function openCinderellaBonusDialog() {
-  openDialog({
-    title: "Cinderella Story Bonus Attraction",
-    body: "Did you complete a Cinderella story bonus attraction sent out be the Every Ride team? Click to send your tweet to document it!",
-    content: "",
-    buttons: [
-      {
-        text: "Send tweet",
-        className: "btn btnPrimary",
-        action: () => {
-          const tweet = buildTaggedTweet("Cinderella Story Bonus Attraction");
-          closeDialog();
-          openTweetDraft(tweet);
-        }
-      },
-      { text: "Cancel", className: "btn", action: () => closeDialog() }
-    ]
-  });
-}
-
 function buildDecisionTweet(attractionNumber, roundId, matchupNumber, winnerId, loserId, points, timeISO, tagsText, fundraisingLink) {
   const w = shortNameFor(winnerId);
   const l = shortNameFor(loserId);
@@ -827,6 +799,34 @@ function openTweetDraft(fullText) {
   const url = new URL("https://twitter.com/intent/tweet");
   url.searchParams.set("text", text);
   window.open(url.toString(), "_blank", "noopener,noreferrer");
+}
+
+function buildCinderellaBonusTweet() {
+  const base = "Cinderella Story Bonus Attraction";
+  const tags = (active?.settings?.tagsText ?? "").trim();
+  return tags ? `${base}
+
+${tags}` : base;
+}
+
+function openCinderellaBonusDialog() {
+  openDialog({
+    title: "Cinderella Story Bonus Attraction",
+    body: "When you have completed a Cinderella Story bonus attraction, click to send tweet",
+    content: "",
+    buttons: [
+      {
+        text: "Send tweet",
+        className: "btn btnPrimary",
+        action: () => {
+          const tweet = buildCinderellaBonusTweet();
+          closeDialog();
+          openTweetDraft(tweet);
+        }
+      },
+      { text: "Cancel", className: "btn", action: () => closeDialog() }
+    ]
+  });
 }
 
 /* =========================
@@ -1442,7 +1442,7 @@ function buildStartingBracketImage(bgImg, qrAppImg, qrDonateImg) {
   ctx.font = fontS;
   drawBullets([
     "Points in later rounds = Round 1 points multiplied by round number",
-    "Main St Entertainment: Each of these can be done once: 1) Main St Vehicles, 2) Dapper Dans (watch 5 min), 3) Festival of Fantasy Parade, 4) Starlight Parade, 5) Happily Ever After, 6) Cavalcade. Parades/Fireworks: Take selfies at beginning and end of show (or first float/last float)",
+    "Main St Entertainment: Each of these can be done once: 1) Main St Vehicles, 2) Dapper Dans (watch 5 min), 3) Festival of Fantasy Parade, 4) Starlight Parade, 5) Happily Ever After. Parades/Fireworks: Take selfies at beginning and end of show (or first float/last float)",
     "No Early Entry (but okay to ride Main St Vehicles prior to park open)",
     "LL Multi Pass and LL Single Pass are allowed; no LLs carried over from a previous day",
     "LL Premier Pass, VIP tours, etc. are not allowed!",
