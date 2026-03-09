@@ -772,6 +772,51 @@ function rebuildRoundsFromEvents() {
   active.bracket.currentRoundId = "R1";
 }
 
+function buildTaggedTweet(mainText) {
+  const base = (mainText || "").trim();
+  const tags = (active?.settings?.tagsText ?? active?.settings?.tweetTags ?? "").trim();
+  return tags ? `${base}
+
+${tags}` : base;
+}
+
+function addCinderellaBonusAttraction() {
+  if (!active) return;
+
+  active.events = Array.isArray(active.events) ? active.events : [];
+  active.events.push({
+    id: crypto.randomUUID(),
+    type: "bonus",
+    bonusType: "cinderella_story",
+    points: 10,
+    timeISO: new Date().toISOString()
+  });
+
+  saveActiveRun(active);
+}
+
+function openCinderellaBonusDialog() {
+  openDialog({
+    title: "Cinderella Story Bonus Attraction",
+    body: "Did you complete a Cinderella story bonus attraction sent out be the Every Ride team? Click to send your tweet to document it!",
+    content: "",
+    buttons: [
+      {
+        text: "Send tweet",
+        className: "btn btnPrimary",
+        action: () => {
+          addCinderellaBonusAttraction();
+          const tweet = buildTaggedTweet("Cinderella Story Bonus Attraction");
+          closeDialog();
+          openTweetDraft(tweet);
+          renderBracketPage();
+        }
+      },
+      { text: "Cancel", className: "btn", action: () => closeDialog() }
+    ]
+  });
+}
+
 function buildDecisionTweet(attractionNumber, roundId, matchupNumber, winnerId, loserId, points, timeISO, tagsText, fundraisingLink) {
   const w = shortNameFor(winnerId);
   const l = shortNameFor(loserId);
@@ -799,34 +844,6 @@ function openTweetDraft(fullText) {
   const url = new URL("https://twitter.com/intent/tweet");
   url.searchParams.set("text", text);
   window.open(url.toString(), "_blank", "noopener,noreferrer");
-}
-
-function buildCinderellaBonusTweet() {
-  const base = "Cinderella Story Bonus Attraction";
-  const tags = (active?.settings?.tagsText ?? "").trim();
-  return tags ? `${base}
-
-${tags}` : base;
-}
-
-function openCinderellaBonusDialog() {
-  openDialog({
-    title: "Cinderella Story Bonus Attraction",
-    body: "Did you complete a Cinderella story bonus attraction sent out by the Every Ride team? Click to send your tweet to document it!",
-    content: "",
-    buttons: [
-      {
-        text: "Send tweet",
-        className: "btn btnPrimary",
-        action: () => {
-          const tweet = buildCinderellaBonusTweet();
-          closeDialog();
-          openTweetDraft(tweet);
-        }
-      },
-      { text: "Cancel", className: "btn", action: () => closeDialog() }
-    ]
-  });
 }
 
 /* =========================
@@ -1895,7 +1912,7 @@ function countRoundDecisions(roundId) {
 
 function computePointsTotal(run = active) {
   const ev = Array.isArray(run?.events) ? run.events : [];
-  return ev.filter(e => e.type === "match_decided").reduce((sum, e) => sum + (Number(e.points) || 0), 0);
+  return ev.reduce((sum, e) => sum + (Number(e?.points) || 0), 0);
 }
 
 /* =========================
