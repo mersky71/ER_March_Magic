@@ -780,21 +780,6 @@ function buildTaggedTweet(mainText) {
 ${tags}` : base;
 }
 
-function addCinderellaBonusAttraction() {
-  if (!active) return;
-
-  active.events = Array.isArray(active.events) ? active.events : [];
-  active.events.push({
-    id: crypto.randomUUID(),
-    type: "bonus",
-    bonusType: "cinderella_story",
-    points: 10,
-    timeISO: new Date().toISOString()
-  });
-
-  saveActiveRun(active);
-}
-
 function openCinderellaBonusDialog() {
   openDialog({
     title: "Cinderella Story Bonus Attraction",
@@ -805,11 +790,20 @@ function openCinderellaBonusDialog() {
         text: "Send tweet",
         className: "btn btnPrimary",
         action: () => {
-          addCinderellaBonusAttraction();
+          active.events = Array.isArray(active?.events) ? active.events : [];
+          active.events.push({
+            id: crypto.randomUUID(),
+            type: "bonus",
+            bonusType: "cinderella_story",
+            points: 10,
+            timeISO: new Date().toISOString()
+          });
+          saveActiveRun(active);
+
           const tweet = buildTaggedTweet("Cinderella Story Bonus Attraction");
           closeDialog();
-          openTweetDraft(tweet);
           renderBracketPage();
+          openTweetDraft(tweet);
         }
       },
       { text: "Cancel", className: "btn", action: () => closeDialog() }
@@ -1553,6 +1547,7 @@ const yBase = Array.from({ length: teams }, (_, i) => {
   // Stats box (top-right)
   const totalMatchups = 31;
   const matchupsDone = countDecisions(run);
+  const cinderellaBonusPoints = getCinderellaBonusPoints(run);
   const pointsTotal = computePointsTotal(run);
 
   const lastDecisionISO = (() => {
@@ -1584,11 +1579,11 @@ const yBase = Array.from({ length: teams }, (_, i) => {
   const statsY = 120;
   const statsX = Math.min(xCols[4] + 40, W - marginR - 320); // xCols[4] == R5 column start
   const statsW = Math.max(320, W - marginR - statsX);
-  const statsH = 170;
+  const statsH = 206;
 
   const statsPad = 16;
   const pointsBoxH = 56;
-  const pointsBoxY = statsY + 92;
+  const pointsBoxY = statsY + 120;
 
   ctx.save();
   ctx.strokeStyle = "#999";
@@ -1606,6 +1601,11 @@ const yBase = Array.from({ length: teams }, (_, i) => {
     `${matchupsDone} of ${totalMatchups} matchups complete`,
     statsX + statsW / 2,
     statsY + 48
+  );
+  ctx.fillText(
+    `Cinderella Story bonuses: ${cinderellaBonusPoints} points`,
+    statsX + statsW / 2,
+    statsY + 80
   );
 
   // Inset points box (more prominent)
@@ -1910,9 +1910,18 @@ function countRoundDecisions(roundId) {
   return round.filter(m => !!m.winner).length;
 }
 
+function getCinderellaBonusPoints(run = active) {
+  const ev = Array.isArray(run?.events) ? run.events : [];
+  return ev
+    .filter(e => e?.type === "bonus" && e?.bonusType === "cinderella_story")
+    .reduce((sum, e) => sum + (Number(e.points) || 0), 0);
+}
+
 function computePointsTotal(run = active) {
   const ev = Array.isArray(run?.events) ? run.events : [];
-  return ev.reduce((sum, e) => sum + (Number(e?.points) || 0), 0);
+  return ev
+    .filter(e => e?.type === "match_decided" || e?.type === "bonus")
+    .reduce((sum, e) => sum + (Number(e.points) || 0), 0);
 }
 
 /* =========================
