@@ -784,7 +784,7 @@ ${tags}` : base;
 function openCinderellaBonusDialog() {
   openDialog({
     title: "Cinderella Story Bonus Attraction",
-    body: "Did you complete a Cinderella story bonus attraction sent out be the Every Ride team? Click to send your tweet to document it!",
+    body: "Did you complete a Cinderella story bonus attraction sent out by the Every Ride team? Click to send your tweet to document it!",
     content: "",
     buttons: [
       {
