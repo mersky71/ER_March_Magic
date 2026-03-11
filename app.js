@@ -796,7 +796,7 @@ function openCinderellaBonusDialog() {
             id: crypto.randomUUID(),
             type: "bonus",
             bonusType: "cinderella_story",
-            points: 10,
+            points: 25,
             timeISO: new Date().toISOString()
           });
           saveActiveRun(active);
