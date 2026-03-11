@@ -1,3 +1,4 @@
+
 // app.js (Bracket Ride Tweet App)
 import {
   loadActiveRun,
@@ -968,7 +969,7 @@ function openRulesDialog() {
         <ul style="margin:8px 0 14px 18px;">
           <li>Take a selfie while in the ride vehicle (or show seat or with character) and tweet with hashtags #ERMarchMagic and tag @RideEvery for credit for each</li>
           <li>If you use a LL, include screenshot showing ride and your name in the tweet</li>
-          <li>An attraction can advance to the next round only if it has an “opponent” (you can’t ride Space Mountain as your first 2 rides to advance it to Round 3)</li>
+          <li>You must complete all matchups in each round before moving on to the next round. Just like on TV, they don't play Round 2 until Round 1 is over!</li>
           <li>For attractions where you could “hop off,” include proof you experienced the attraction (mid-ride/show video or photo)</li>
         </ul>
 
@@ -1435,17 +1436,17 @@ function buildStartingBracketImage(bgImg, qrAppImg, qrDonateImg) {
 
   drawHeader("Required Elements");
   drawBullets([
-    "Take a selfie while in the ride vehicle (or show seat or with character) and tweet with hashtags #ERMarchMagic and tag @RideEvery for credit for each",
+    "Take a selfie in the ride vehicle (or show seat or with character) and tweet with hashtags #ERMarchMagic and tag @RideEvery for credit",
     "If you use a LL, include screenshot showing ride and your name in the tweet",
-    "An attraction can advance to the next round only if it has an opponent (you can\u2019t ride Space Mountain as your first 2 rides to advance it to Round 3)",
+    "You must complete all matchups in each round before moving on to the next round. Just like on TV, they don't play Round 2 until Round 1 is over!",
     "For attractions where you could \u201chop off,\u201d include proof you experienced the attraction (mid-ride/show video or photo)"
   ]);
 
   drawHeader("Strongly Encouraged");
   drawBullets([
-    "Use a time stamp camera to help out the official scorers",
-    "Use the app to draft your tweets and track your run",
-    "Create a fundraising page to support Give Kids the World Village and include the link in your tweets. Share to family and friends!",
+    "Use a time stamp to help the official scorers",
+    "Use the app to draft tweets and track your run",
+    "Create a fundraising page to support Give Kids the World Village, include the link in your tweets!",
     "Meet in the Hub at end of night for group photo!"
   ]);
 
@@ -1453,11 +1454,12 @@ function buildStartingBracketImage(bgImg, qrAppImg, qrDonateImg) {
   ctx.font = fontS;
   drawBullets([
     "Points in later rounds = Round 1 points multiplied by round number",
-    "Main St Entertainment: Each of these can be done once: 1) Main St Vehicles, 2) Dapper Dans (watch 5 min), 3) Festival of Fantasy Parade, 4) Starlight Parade, 5) Happily Ever After, 6) Cavalcade. Parades/Fireworks: Take selfies at beginning and end of show (or first float/last float)",
+    "Main St Entertainment: Each of these can be done once: 1) Main St Vehicles, 2) Dapper Dans, 3) FoF Parade, 4) Starlight Parade, 5) Happily Ever After, 6) Cavalcade. Take selfies at beginning and end of attraction/show. Must watch from Main St!",
     "No Early Entry (but okay to ride Main St Vehicles prior to park open)",
-    "LL Multi Pass and LL Single Pass are allowed; no LLs carried over from a previous day",
-    "LL Premier Pass, VIP tours, etc. are not allowed!",
-    "A multi-experience (anytime) pass must be used for its original ride"
+    "LL Multi Pass and LL Single Pass are allowed; no LLs carried over from a previous day, no Premier Pass or VIP tours!",
+    "A multi-experience (anytime) pass must be used for its original ride",
+    "Follow @RideEvery and watch for Cinderella Story bonus opportunities!",
+    "Prizes for top finishers! Rankings will be based on 1) Completing your bracket (all 31 matchups), 2) Total points, 3) Total time"
   ]);
 
 return canvas.toDataURL("image/png");
